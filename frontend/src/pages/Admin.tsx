@@ -12,7 +12,8 @@ import {
   deletePhoto,
   getAllLetters,
   getAllPhotos,
-  listPinsSet,
+  listPins,
+  type PinSummary,
   photoImageUrl,
   photoRecipientIdSet,
   resetPin,
@@ -124,20 +125,20 @@ function PasswordGate({ onSuccess }: { onSuccess: () => void }) {
 function AdminContent({ onLogout }: { onLogout: () => void }) {
   const [letters, setLetters] = useState<Letter[]>([])
   const [photos, setPhotos] = useState<PhotoMeta[]>([])
-  const [pinsSet, setPinsSet] = useState<string[]>([])
+  const [pins, setPins] = useState<PinSummary[]>([])
   const [loading, setLoading] = useState(true)
 
   const reload = async () => {
     setLoading(true)
     try {
-      const [ls, ps, pins] = await Promise.all([
+      const [ls, ps, ps2] = await Promise.all([
         getAllLetters(),
         getAllPhotos(),
-        listPinsSet().catch(() => []),
+        listPins().catch(() => [] as PinSummary[]),
       ])
       setLetters(ls)
       setPhotos(ps)
-      setPinsSet(pins)
+      setPins(ps2)
     } catch (e) {
       console.error(e)
     } finally {
@@ -278,26 +279,26 @@ function AdminContent({ onLogout }: { onLogout: () => void }) {
         </p>
         <ul className="bg-white rounded-2xl border border-stone-200 divide-y divide-stone-100">
           {FAMILIES.flatMap((f) => f.cousins).map((name) => {
-            const isSet = pinsSet.includes(name)
+            const entry = pins.find((p) => p.cousinName === name)
+            const isSet = !!entry
             return (
               <li
                 key={name}
                 className="px-4 py-3 flex items-center justify-between gap-3"
               >
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="font-semibold text-stone-800 truncate">
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className="font-semibold text-stone-800 truncate w-16 shrink-0">
                     {name}
                   </span>
-                  <span
-                    className={[
-                      'text-[10px] tracking-wider uppercase px-1.5 py-0.5 rounded',
-                      isSet
-                        ? 'bg-emerald-100 text-emerald-700'
-                        : 'bg-stone-100 text-stone-500',
-                    ].join(' ')}
-                  >
-                    {isSet ? 'PIN 설정됨' : '미설정'}
-                  </span>
+                  {isSet ? (
+                    <code className="text-sm font-mono tabular-nums tracking-[0.3em] text-stone-700 bg-stone-100 px-2 py-1 rounded">
+                      {entry.pin}
+                    </code>
+                  ) : (
+                    <span className="text-[10px] tracking-wider uppercase text-stone-400 bg-stone-100 px-1.5 py-0.5 rounded">
+                      미설정
+                    </span>
+                  )}
                 </div>
                 {isSet && (
                   <button

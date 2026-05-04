@@ -339,7 +339,9 @@ export async function resetPin(cousinName: string): Promise<void> {
   })
 }
 
-export async function listPinsSet(): Promise<string[]> {
+export type PinSummary = { cousinName: string; pin: string }
+
+export async function listPins(): Promise<PinSummary[]> {
   const res = await fetch(`${API_BASE}/pins`)
   if (!res.ok) return []
   return res.json()

@@ -66,11 +66,13 @@ public class CousinPinController {
         return ResponseEntity.noContent().build();
     }
 
-    /** 어드민용: PIN 설정한 사촌 이름 목록 */
+    public record PinSummary(String cousinName, String pin) {}
+
+    /** 어드민용: PIN 설정한 사촌 이름 + PIN 값 */
     @GetMapping
-    public List<String> list() {
+    public List<PinSummary> list() {
         return repo.findAll().stream()
-            .map(CousinPin::getCousinName)
+            .map(p -> new PinSummary(p.getCousinName(), p.getPin()))
             .toList();
     }
 }
