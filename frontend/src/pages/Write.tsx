@@ -24,10 +24,10 @@ type View =
   | { kind: 'editor'; recipient: Recipient }
 
 export default function Write() {
+  // /write로 진입할 땐 항상 본인 확인을 먼저 받는다.
+  // 이전에 쓴 이름은 picker에 하이라이트로 표시되니 한 번 더 클릭하면 그대로 진행.
   const [writer, setWriter] = useState<Writer | null>(() => getCurrentWriter())
-  const [view, setView] = useState<View>(() =>
-    getCurrentWriter() ? { kind: 'list' } : { kind: 'pick' },
-  )
+  const [view, setView] = useState<View>({ kind: 'pick' })
 
   if (view.kind === 'pick' || !writer) {
     return (
@@ -85,7 +85,9 @@ function CousinPicker({
         본인을 골라주세요
       </h2>
       <p className="text-sm text-stone-500 mb-8">
-        어느 가족의 사촌인지 알아야 부모님 호칭을 맞춰드릴 수 있어요.
+        {current
+          ? `이전에 ${current.name}으로 쓰셨어요. 그대로면 다시 눌러주세요.`
+          : '어느 가족의 사촌인지 알아야 부모님 호칭을 맞춰드릴 수 있어요.'}
       </p>
 
       <div className="space-y-6">
