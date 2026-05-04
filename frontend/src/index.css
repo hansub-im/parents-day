@@ -14,9 +14,11 @@ html, body, #root {
   padding: 0;
 }
 
-/* 모바일에서 컨텐츠 끝까지 스윕했을 때 노출되는 영역도 같은 톤으로 (안 그러면 흰 배경 보임) */
+/* 그라디언트를 html에 박아서 iOS safe area / 바운스 영역도 같은 톤으로 보이게.
+   위쪽: cream, 가운데: 분홍, 아래쪽: 호박색 */
 html {
-  background-color: #fef3c7;
+  background: linear-gradient(180deg, #fff7f4 0%, #fdf2f8 60%, #fef3c7 100%);
+  background-attachment: fixed;
 }
 
 /* 의미없는 rubber-band/바운스 차단. 진짜로 스크롤이 필요한 긴 페이지는 그대로 스크롤됨. */
@@ -29,8 +31,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: #1c1917;
-  background: linear-gradient(180deg, #fff7f4 0%, #fef3c7 100%);
-  background-attachment: fixed;
+  background: transparent;
 }
 
 #root {
@@ -38,9 +39,7 @@ body {
 }
 
 .bg-app-gradient {
-  background: linear-gradient(180deg, #fff7f4 0%, #fdf2f8 60%, #fef3c7 100%);
-  background-attachment: fixed;
-  /* 100dvh: 모바일 주소창 변동에 맞춰 동적으로 계산 → 의미없는 스크롤 방지 */
+  /* 그라디언트는 html에 있음. 여기는 layout 보장만. */
   min-height: 100vh;        /* 구형 브라우저 fallback */
   min-height: 100dvh;       /* 지원 브라우저는 이 값 사용 */
 }
