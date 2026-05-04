@@ -52,41 +52,50 @@ function Carnation() {
     <svg
       width="96"
       height="96"
-      viewBox="0 0 96 96"
+      viewBox="0 0 100 100"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden
     >
-      <g transform="translate(48 50)">
-        {[0, 60, 120, 180, 240, 300].map((deg) => (
-          <ellipse
-            key={deg}
-            cx="0"
-            cy="-16"
-            rx="14"
-            ry="20"
-            fill="#fb7185"
-            opacity="0.85"
-            transform={`rotate(${deg})`}
-          />
-        ))}
-        <circle cx="0" cy="0" r="13" fill="#e11d48" />
-        <circle cx="-3" cy="-3" r="4" fill="#fda4af" opacity="0.7" />
+      {/* 줄기 */}
+      <path
+        d="M50 58 Q 48 75 52 95"
+        stroke="#15803d"
+        strokeWidth="3.5"
+        strokeLinecap="round"
+        fill="none"
+      />
+      {/* 잎 */}
+      <path
+        d="M50 80 Q 32 76 24 88 Q 38 85 50 82 Z"
+        fill="#16a34a"
+      />
+      <path
+        d="M50 70 Q 67 66 74 76 Q 62 73 50 72 Z"
+        fill="#16a34a"
+      />
+
+      {/* 카네이션 머리 — 풍성한 분홍 펑펑한 모양 */}
+      <g transform="translate(50, 36)">
+        {/* 바깥 layer: 살짝 흐린 분홍 */}
+        <circle cx="-18" cy="-8"  r="11" fill="#fda4af" />
+        <circle cx="18"  cy="-8"  r="11" fill="#fda4af" />
+        <circle cx="-15" cy="11"  r="11" fill="#fda4af" />
+        <circle cx="15"  cy="11"  r="11" fill="#fda4af" />
+        <circle cx="0"   cy="-19" r="11" fill="#fda4af" />
+        <circle cx="0"   cy="16"  r="10" fill="#fda4af" />
+
+        {/* 중간 layer */}
+        <circle cx="-9"  cy="-4"  r="11" fill="#fb7185" />
+        <circle cx="9"   cy="-4"  r="11" fill="#fb7185" />
+        <circle cx="0"   cy="-11" r="10" fill="#fb7185" />
+        <circle cx="-7"  cy="8"   r="10" fill="#fb7185" />
+        <circle cx="7"   cy="8"   r="10" fill="#fb7185" />
+
+        {/* 중심 */}
+        <circle cx="0" cy="0" r="9" fill="#e11d48" />
+        <circle cx="-2" cy="-3" r="3" fill="#fda4af" opacity="0.7" />
       </g>
-      <path
-        d="M48 60 Q 50 76 56 86"
-        stroke="#15803d"
-        strokeWidth="3"
-        strokeLinecap="round"
-        fill="none"
-      />
-      <path
-        d="M50 72 Q 60 70 64 64"
-        stroke="#15803d"
-        strokeWidth="3"
-        strokeLinecap="round"
-        fill="none"
-      />
     </svg>
   )
 }
