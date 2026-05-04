@@ -223,9 +223,9 @@ export default function Admin() {
       <Section title="공유">
         <div className="bg-white rounded-2xl border border-stone-200 p-4 flex items-center gap-3">
           <code className="flex-1 min-w-0 truncate text-xs text-stone-500 bg-stone-50 px-2 py-1.5 rounded">
-            {buildShareLink('/write')}
+            {'https://www.im-hansub.co.kr'}
           </code>
-          <CopyButton text={buildShareLink('/write')} label="작성 링크" />
+          <CopyButton text={'https://www.im-hansub.co.kr'} label="작성 링크" />
         </div>
         <p className="mt-2 text-xs text-stone-400">
           위 링크를 사촌들 단톡에 공유하세요.
