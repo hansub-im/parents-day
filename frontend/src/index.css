@@ -30,7 +30,9 @@ body {
 .bg-app-gradient {
   background: linear-gradient(180deg, #fff7f4 0%, #fdf2f8 60%, #fef3c7 100%);
   background-attachment: fixed;
-  min-height: 100vh;
+  /* 100dvh: 모바일 주소창 변동에 맞춰 동적으로 계산 → 의미없는 스크롤 방지 */
+  min-height: 100vh;        /* 구형 브라우저 fallback */
+  min-height: 100dvh;       /* 지원 브라우저는 이 값 사용 */
 }
 
 @keyframes bloom {
