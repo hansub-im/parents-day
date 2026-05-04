@@ -56,6 +56,12 @@ export default function Photos() {
     reload()
   }, [])
 
+  // 본인이 올린 사진만 보여줌. 다른 사촌이 올린 사진은 부모님 홈에서만 보임.
+  const myPhotos = useMemo(
+    () => (writer ? photos.filter((p) => p.uploaderName === writer.name) : []),
+    [photos, writer?.name],
+  )
+
   if (!writer) {
     return (
       <div className="min-h-full flex flex-col items-center justify-center px-6 text-center">
@@ -230,7 +236,7 @@ export default function Photos() {
 
       <div className="flex items-center justify-between mb-3 px-1">
         <h2 className="text-sm font-semibold text-stone-700">
-          모인 사진 {photos.length}장
+          내가 올린 사진 {myPhotos.length}장
         </h2>
         <button
           type="button"
@@ -242,24 +248,23 @@ export default function Photos() {
         </button>
       </div>
 
-      {photos.length === 0 ? (
+      {myPhotos.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-stone-300 p-10 text-center">
           <div className="text-3xl mb-3">🌷</div>
           <p className="text-sm text-stone-500">
             첫 사진을 올려보세요!
             <br />
-            가족이 한 장씩 올리면 추억의 홈이 완성돼요.
+            여러분이 올린 사진은 여기에 모여요.
           </p>
         </div>
       ) : (
         <ul className="grid grid-cols-2 gap-4">
-          {photos.map((photo) => (
+          {myPhotos.map((photo) => (
             <li key={photo.id}>
               <PhotoCard
                 photo={photo}
-                canDelete={photo.uploaderName === writer.name}
                 onDelete={async () => {
-                  if (!confirm('정말 삭제할까요?')) return
+                  if (!confirm('이 사진을 정말 삭제할까요?')) return
                   try {
                     await deletePhoto(photo.id)
                     await reload()
@@ -283,11 +288,9 @@ export default function Photos() {
 
 function PhotoCard({
   photo,
-  canDelete,
   onDelete,
 }: {
   photo: PhotoMeta
-  canDelete: boolean
   onDelete: () => void
 }) {
   const recipientNames = useMemo(() => {
@@ -317,16 +320,14 @@ function PhotoCard({
           → {recipientNames}
         </p>
       )}
-      {canDelete && (
-        <button
-          type="button"
-          onClick={onDelete}
-          className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-white/90 hover:bg-rose-500 hover:text-white text-stone-500 text-xs flex items-center justify-center shadow border border-stone-200 transition"
-          title="삭제"
-        >
-          ✕
-        </button>
-      )}
+      <button
+        type="button"
+        onClick={onDelete}
+        className="absolute top-2 right-2 w-10 h-10 rounded-full bg-white/95 hover:bg-rose-500 hover:text-white active:bg-rose-600 text-stone-600 text-base font-semibold flex items-center justify-center shadow-md border border-stone-200 transition"
+        aria-label="사진 삭제"
+      >
+        ✕
+      </button>
     </div>
   )
 }
