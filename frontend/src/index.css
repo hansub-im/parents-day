@@ -14,6 +14,16 @@ html, body, #root {
   padding: 0;
 }
 
+/* 모바일에서 컨텐츠 끝까지 스윕했을 때 노출되는 영역도 같은 톤으로 (안 그러면 흰 배경 보임) */
+html {
+  background-color: #fef3c7;
+}
+
+/* 의미없는 rubber-band/바운스 차단. 진짜로 스크롤이 필요한 긴 페이지는 그대로 스크롤됨. */
+html, body {
+  overscroll-behavior: none;
+}
+
 body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
