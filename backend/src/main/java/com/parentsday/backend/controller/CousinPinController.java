@@ -66,6 +66,13 @@ public class CousinPinController {
         return ResponseEntity.noContent().build();
     }
 
+    /** 어드민용: 모든 PIN 삭제 (깨진 데이터 청소용) */
+    @DeleteMapping
+    public ResponseEntity<Void> resetAll() {
+        repo.deleteAll();
+        return ResponseEntity.noContent().build();
+    }
+
     public record PinSummary(String cousinName, String pin) {}
 
     /** 어드민용: PIN 설정한 사촌 이름 + PIN 값 */

@@ -13,6 +13,7 @@ import {
   getAllLetters,
   getAllPhotos,
   listPins,
+  resetAllPins,
   type PinSummary,
   photoImageUrl,
   photoRecipientIdSet,
@@ -274,9 +275,33 @@ function AdminContent({ onLogout }: { onLogout: () => void }) {
       </Section>
 
       <Section title="사촌 PIN 관리">
-        <p className="text-xs text-stone-400 mb-3">
-          PIN을 잊은 사촌이 있으면 리셋해주세요. 리셋되면 그 사촌은 다음 입장 때 PIN을 새로 만들 수 있어요.
-        </p>
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-xs text-stone-400 flex-1">
+            PIN을 잊은 사촌이 있으면 리셋해주세요.
+          </p>
+          <button
+            type="button"
+            onClick={async () => {
+              if (
+                !confirm(
+                  '모든 사촌의 PIN을 초기화할까요? 모두 다음 입장 때 새 PIN을 만들어야 해요.',
+                )
+              ) {
+                return
+              }
+              try {
+                await resetAllPins()
+                await reload()
+              } catch (e) {
+                console.error(e)
+                alert('전체 초기화 실패')
+              }
+            }}
+            className="text-xs text-rose-500 hover:text-rose-700 px-3 py-1.5 rounded-lg hover:bg-rose-50 shrink-0"
+          >
+            전체 초기화
+          </button>
+        </div>
         <ul className="bg-white rounded-2xl border border-stone-200 divide-y divide-stone-100">
           {FAMILIES.flatMap((f) => f.cousins).map((name) => {
             const entry = pins.find((p) => p.cousinName === name)

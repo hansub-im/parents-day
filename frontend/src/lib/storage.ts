@@ -339,6 +339,10 @@ export async function resetPin(cousinName: string): Promise<void> {
   })
 }
 
+export async function resetAllPins(): Promise<void> {
+  await fetch(`${API_BASE}/pins`, { method: 'DELETE' })
+}
+
 export type PinSummary = { cousinName: string; pin: string }
 
 export async function listPins(): Promise<PinSummary[]> {
