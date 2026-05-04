@@ -13,6 +13,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Nationalized;
 
 @Entity
 @Table(
@@ -37,6 +38,7 @@ public class Reply {
     private String fromRecipientId;
 
     /** Empty string means common (1:N) reply. */
+    @Nationalized
     @Column(name = "to_cousin_name", nullable = false, length = 100)
     private String toCousinName;
 

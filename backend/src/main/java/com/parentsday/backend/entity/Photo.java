@@ -13,6 +13,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Nationalized;
 
 @Entity
 @Table(name = "photos")
@@ -27,12 +28,14 @@ public class Photo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Nationalized
     @Column(name = "uploader_name", nullable = false, length = 100)
     private String uploaderName;
 
     @Column(name = "uploader_family_id", length = 20)
     private String uploaderFamilyId;
 
+    @Nationalized
     @Column(length = 200)
     private String caption;
 
