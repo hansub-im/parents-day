@@ -14,7 +14,106 @@ import {
 } from '../lib/storage'
 import { buildShareLink, navigate } from '../lib/router'
 
+const ADMIN_PASS = '182637'
+const ADMIN_AUTH_KEY = 'parents-day:admin-auth:v1'
+
+function isAdminAuthed(): boolean {
+  return localStorage.getItem(ADMIN_AUTH_KEY) === ADMIN_PASS
+}
+
 export default function Admin() {
+  const [authed, setAuthed] = useState<boolean>(() => isAdminAuthed())
+
+  if (!authed) {
+    return (
+      <PasswordGate
+        onSuccess={() => {
+          localStorage.setItem(ADMIN_AUTH_KEY, ADMIN_PASS)
+          setAuthed(true)
+        }}
+      />
+    )
+  }
+
+  return (
+    <AdminContent
+      onLogout={() => {
+        localStorage.removeItem(ADMIN_AUTH_KEY)
+        setAuthed(false)
+      }}
+    />
+  )
+}
+
+function PasswordGate({ onSuccess }: { onSuccess: () => void }) {
+  const [input, setInput] = useState('')
+  const [error, setError] = useState(false)
+
+  return (
+    <div className="min-h-full flex flex-col items-center justify-center px-6 py-10">
+      <button
+        type="button"
+        onClick={() => navigate('/')}
+        className="absolute top-6 left-6 text-sm text-stone-400 hover:text-stone-600"
+      >
+        ← 처음으로
+      </button>
+
+      <div className="text-5xl mb-5">🔒</div>
+      <h2 className="font-display text-2xl text-stone-800 mb-2">
+        관리자 비밀번호
+      </h2>
+      <p className="text-sm text-stone-500 mb-8 text-center max-w-xs">
+        본인만 들어올 수 있는 페이지예요.
+      </p>
+
+      <form
+        onSubmit={(e) => {
+          e.preventDefault()
+          if (input === ADMIN_PASS) {
+            onSuccess()
+          } else {
+            setError(true)
+            setInput('')
+          }
+        }}
+        className="w-full max-w-xs space-y-3"
+      >
+        <input
+          type="password"
+          inputMode="numeric"
+          autoFocus
+          value={input}
+          onChange={(e) => {
+            setInput(e.target.value)
+            setError(false)
+          }}
+          placeholder="비밀번호"
+          className={[
+            'w-full bg-white border rounded-2xl px-5 py-4 text-lg outline-none transition',
+            error
+              ? 'border-rose-400 ring-4 ring-rose-100'
+              : 'border-stone-200 focus:border-rose-400 focus:ring-4 focus:ring-rose-100',
+          ].join(' ')}
+        />
+        {error && (
+          <p className="text-xs text-rose-500 text-center">
+            비밀번호가 틀려요
+          </p>
+        )}
+        <button
+          type="submit"
+          disabled={!input}
+          className="w-full bg-rose-500 hover:bg-rose-600 disabled:bg-stone-200 disabled:text-stone-400 text-white font-semibold py-4 rounded-2xl shadow-lg shadow-rose-200/70 transition"
+        >
+          확인
+        </button>
+      </form>
+    </div>
+  )
+}
+
+function AdminContent({ onLogout }: { onLogout: () => void }) {
   const [letters, setLetters] = useState<Letter[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -66,14 +165,23 @@ export default function Admin() {
         >
           ← 처음으로
         </button>
-        <button
-          type="button"
-          onClick={reload}
-          disabled={loading}
-          className="text-xs text-stone-500 hover:text-stone-800 underline underline-offset-2 disabled:opacity-50"
-        >
-          {loading ? '불러오는 중…' : '새로고침'}
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={reload}
+            disabled={loading}
+            className="text-xs text-stone-500 hover:text-stone-800 underline underline-offset-2 disabled:opacity-50"
+          >
+            {loading ? '불러오는 중…' : '새로고침'}
+          </button>
+          <button
+            type="button"
+            onClick={onLogout}
+            className="text-xs text-stone-400 hover:text-rose-500"
+          >
+            🔒 잠그기
+          </button>
+        </div>
       </div>
 
       <h1 className="font-display text-3xl text-stone-800 mb-1">관리</h1>
