@@ -266,17 +266,25 @@ export async function uploadPhoto(input: {
   recipientIds?: string[]
   filename?: string
 }): Promise<PhotoMeta> {
-  // 메타데이터는 query string으로 (multipart 텍스트 파트가 한글 인코딩 깨지는 문제 회피)
-  const params = new URLSearchParams()
-  params.set('uploaderName', input.uploaderName)
-  if (input.uploaderFamilyId) params.set('uploaderFamilyId', input.uploaderFamilyId)
-  if (input.caption) params.set('caption', input.caption)
-  if (input.recipientIds && input.recipientIds.length > 0) {
-    params.set('recipientIds', input.recipientIds.join(','))
-  }
+  // 메타데이터를 application/json Blob으로 multipart에 박는다.
+  // 이렇게 하면 Tomcat이 part의 Content-Type을 보고 UTF-8로 정확히 처리.
+  const meta = JSON.stringify({
+    uploaderName: input.uploaderName,
+    uploaderFamilyId: input.uploaderFamilyId,
+    caption: input.caption,
+    recipientIds:
+      input.recipientIds && input.recipientIds.length > 0
+        ? input.recipientIds.join(',')
+        : undefined,
+  })
   const fd = new FormData()
   fd.append('file', input.file, input.filename ?? 'photo.jpg')
-  const res = await fetch(`${API_BASE}/photos?${params.toString()}`, {
+  fd.append(
+    'meta',
+    new Blob([meta], { type: 'application/json' }),
+    'meta.json',
+  )
+  const res = await fetch(`${API_BASE}/photos`, {
     method: 'POST',
     body: fd,
   })

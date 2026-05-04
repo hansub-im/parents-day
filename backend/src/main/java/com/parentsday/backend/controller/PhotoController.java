@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -45,6 +46,13 @@ public class PhotoController {
         }
     }
 
+    public record PhotoUploadMeta(
+        String uploaderName,
+        String uploaderFamilyId,
+        String caption,
+        String recipientIds
+    ) {}
+
     @GetMapping
     public List<PhotoMeta> list() {
         return repo.findAllByOrderByCreatedAtAsc().stream()
@@ -64,20 +72,17 @@ public class PhotoController {
 
     @PostMapping
     public PhotoMeta upload(
-        @RequestParam("file") MultipartFile file,
-        @RequestParam("uploaderName") String uploaderName,
-        @RequestParam(value = "uploaderFamilyId", required = false) String uploaderFamilyId,
-        @RequestParam(value = "caption", required = false) String caption,
-        @RequestParam(value = "recipientIds", required = false) String recipientIds
+        @RequestPart("file") MultipartFile file,
+        @RequestPart("meta") PhotoUploadMeta meta
     ) throws IOException {
         if (file.isEmpty()) {
             throw new IllegalArgumentException("Empty file");
         }
         Photo p = Photo.builder()
-            .uploaderName(uploaderName)
-            .uploaderFamilyId(uploaderFamilyId)
-            .caption(caption)
-            .recipientIds(recipientIds)
+            .uploaderName(meta.uploaderName())
+            .uploaderFamilyId(meta.uploaderFamilyId())
+            .caption(meta.caption())
+            .recipientIds(meta.recipientIds())
             .contentType(file.getContentType() != null ? file.getContentType() : "image/jpeg")
             .imageData(file.getBytes())
             .createdAt(Instant.now())
