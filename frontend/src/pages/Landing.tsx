@@ -2,10 +2,10 @@ import { navigate } from '../lib/router'
 
 export default function Landing() {
   return (
-    <div className="min-h-full relative overflow-hidden">
+    <div className="min-h-dvh relative overflow-hidden">
       <Decoration />
 
-      <main className="relative z-10 flex min-h-full flex-col items-center justify-center px-6 py-16 text-center">
+      <main className="relative z-10 flex min-h-dvh flex-col items-center justify-center px-6 py-16 text-center">
         <div className="mb-8 animate-bloom">
           <Carnation />
         </div>

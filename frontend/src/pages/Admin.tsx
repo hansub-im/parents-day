@@ -56,7 +56,7 @@ function PasswordGate({ onSuccess }: { onSuccess: () => void }) {
   const [error, setError] = useState(false)
 
   return (
-    <div className="min-h-full flex flex-col items-center justify-center px-6 py-10">
+    <div className="min-h-dvh flex flex-col items-center justify-center px-6 py-10">
       <button
         type="button"
         onClick={() => navigate('/')}
@@ -164,7 +164,7 @@ function AdminContent({ onLogout }: { onLogout: () => void }) {
   ).length
 
   return (
-    <div className="min-h-full px-5 py-8 max-w-2xl mx-auto">
+    <div className="min-h-dvh px-5 py-8 max-w-2xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <button
           type="button"

@@ -20,7 +20,7 @@ export default function Replies() {
 
   if (!writer) {
     return (
-      <div className="min-h-full flex flex-col items-center justify-center px-6 text-center">
+      <div className="min-h-dvh flex flex-col items-center justify-center px-6 text-center">
         <p className="text-5xl mb-5">🌷</p>
         <h2 className="font-display text-2xl text-stone-800 mb-2">
           먼저 본인 이름을 골라주세요
@@ -40,7 +40,7 @@ export default function Replies() {
   }
 
   return (
-    <div className="min-h-full flex flex-col px-5 py-6 max-w-md mx-auto">
+    <div className="min-h-dvh flex flex-col px-5 py-6 max-w-md mx-auto">
       <div className="flex items-center justify-between">
         <button
           type="button"

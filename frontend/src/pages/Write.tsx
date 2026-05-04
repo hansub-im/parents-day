@@ -69,7 +69,7 @@ function CousinPicker({
   onPick: (w: Writer) => void
 }) {
   return (
-    <div className="min-h-full flex flex-col px-5 py-6 max-w-md mx-auto">
+    <div className="min-h-dvh flex flex-col px-5 py-6 max-w-md mx-auto">
       <button
         type="button"
         onClick={() => navigate('/')}
@@ -176,7 +176,7 @@ function RecipientList({
   const allDone = progress && progress.done === progress.total
 
   return (
-    <div className="min-h-full flex flex-col px-5 py-6 max-w-md mx-auto">
+    <div className="min-h-dvh flex flex-col px-5 py-6 max-w-md mx-auto">
       <div className="flex items-center justify-between">
         <button
           type="button"
@@ -413,7 +413,7 @@ function Editor({
   }
 
   return (
-    <div className="min-h-full flex flex-col px-5 py-6 max-w-md mx-auto">
+    <div className="min-h-dvh flex flex-col px-5 py-6 max-w-md mx-auto">
       <div className="flex items-center justify-between mb-4">
         <button
           type="button"

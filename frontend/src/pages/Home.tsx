@@ -46,7 +46,7 @@ export default function Home({ recipientId }: { recipientId: string }) {
 
   if (!recipient) {
     return (
-      <div className="min-h-full flex items-center justify-center px-6 text-center">
+      <div className="min-h-dvh flex items-center justify-center px-6 text-center">
         <div>
           <p className="text-5xl mb-4">😢</p>
           <p className="text-stone-600 font-semibold mb-1">잘못된 링크예요</p>
@@ -59,10 +59,10 @@ export default function Home({ recipientId }: { recipientId: string }) {
   const name = recipientPrimary(recipient)
 
   return (
-    <div className="min-h-full relative overflow-hidden">
+    <div className="min-h-dvh relative overflow-hidden">
       <Decoration />
 
-      <div className="relative z-10 max-w-md mx-auto px-5 py-6 min-h-full flex flex-col">
+      <div className="relative z-10 max-w-md mx-auto px-5 py-6 min-h-dvh flex flex-col">
         {letterCount > 0 && (
           <button
             type="button"

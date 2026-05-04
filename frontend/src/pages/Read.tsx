@@ -29,7 +29,7 @@ export default function Read({ recipientId }: { recipientId: string }) {
 
   if (!recipient) {
     return (
-      <div className="min-h-full flex items-center justify-center px-6 text-center">
+      <div className="min-h-dvh flex items-center justify-center px-6 text-center">
         <div>
           <p className="text-5xl mb-4">😢</p>
           <p className="text-stone-600 font-semibold mb-1">잘못된 링크예요</p>
@@ -42,7 +42,7 @@ export default function Read({ recipientId }: { recipientId: string }) {
   const lettersList = letters ?? []
 
   return (
-    <div className="min-h-full flex flex-col px-5 py-6 max-w-md mx-auto">
+    <div className="min-h-dvh flex flex-col px-5 py-6 max-w-md mx-auto">
       <button
         type="button"
         onClick={() => navigate(`/home/${recipient.id}`)}

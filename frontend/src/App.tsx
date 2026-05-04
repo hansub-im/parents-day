@@ -28,5 +28,5 @@ export default function App() {
     }
   }
 
-  return <div className="min-h-full bg-app-gradient">{page}</div>
+  return <div className="min-h-dvh bg-app-gradient">{page}</div>
 }

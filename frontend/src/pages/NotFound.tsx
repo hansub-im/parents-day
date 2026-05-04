@@ -2,7 +2,7 @@ import { navigate } from '../lib/router'
 
 export default function NotFound() {
   return (
-    <div className="min-h-full flex items-center justify-center px-6 text-center">
+    <div className="min-h-dvh flex items-center justify-center px-6 text-center">
       <div>
         <p className="text-6xl mb-5">🌷</p>
         <h2 className="font-display text-2xl text-stone-800 mb-2">
