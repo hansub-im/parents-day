@@ -266,15 +266,20 @@ export async function uploadPhoto(input: {
   recipientIds?: string[]
   filename?: string
 }): Promise<PhotoMeta> {
+  // 메타데이터는 query string으로 (multipart 텍스트 파트가 한글 인코딩 깨지는 문제 회피)
+  const params = new URLSearchParams()
+  params.set('uploaderName', input.uploaderName)
+  if (input.uploaderFamilyId) params.set('uploaderFamilyId', input.uploaderFamilyId)
+  if (input.caption) params.set('caption', input.caption)
+  if (input.recipientIds && input.recipientIds.length > 0) {
+    params.set('recipientIds', input.recipientIds.join(','))
+  }
   const fd = new FormData()
   fd.append('file', input.file, input.filename ?? 'photo.jpg')
-  fd.append('uploaderName', input.uploaderName)
-  if (input.uploaderFamilyId) fd.append('uploaderFamilyId', input.uploaderFamilyId)
-  if (input.caption) fd.append('caption', input.caption)
-  if (input.recipientIds && input.recipientIds.length > 0) {
-    fd.append('recipientIds', input.recipientIds.join(','))
-  }
-  const res = await fetch(`${API_BASE}/photos`, { method: 'POST', body: fd })
+  const res = await fetch(`${API_BASE}/photos?${params.toString()}`, {
+    method: 'POST',
+    body: fd,
+  })
   if (!res.ok) throw new Error(`POST /api/photos ${res.status}`)
   return res.json()
 }

@@ -1,6 +1,8 @@
 server:
   port: 8083                          # newproject(8082)와 충돌 안 나게
   forward-headers-strategy: framework   # nginx 리버스 프록시 뒤에서 X-Forwarded-* 인식
+  tomcat:
+    uri-encoding: UTF-8                 # query string UTF-8 강제
   servlet:
     encoding:
       charset: UTF-8
