@@ -23,11 +23,21 @@ type View =
   | { kind: 'list' }
   | { kind: 'editor'; recipient: Recipient }
 
+/**
+ * 한 세션 안에서 picker를 통과한 적이 있는지 표시.
+ * 처음 진입 시: picker 표시 (가족이 폰 공유 시 누군지 확인)
+ * 한 번 picker 통과 후: /write로 다시 와도 RecipientList로 직행 (back 등)
+ * 탭 닫으면 sessionStorage가 비워져서 다음 세션엔 다시 picker 표시
+ */
+const SESSION_PICKER_PASSED = 'parents-day:picker-passed'
+
 export default function Write() {
-  // /write로 진입할 땐 항상 본인 확인을 먼저 받는다.
-  // 이전에 쓴 이름은 picker에 하이라이트로 표시되니 한 번 더 클릭하면 그대로 진행.
   const [writer, setWriter] = useState<Writer | null>(() => getCurrentWriter())
-  const [view, setView] = useState<View>({ kind: 'pick' })
+  const [view, setView] = useState<View>(() => {
+    const w = getCurrentWriter()
+    const passed = sessionStorage.getItem(SESSION_PICKER_PASSED) === '1'
+    return w && passed ? { kind: 'list' } : { kind: 'pick' }
+  })
 
   if (view.kind === 'pick' || !writer) {
     return (
@@ -35,6 +45,7 @@ export default function Write() {
         current={writer}
         onPick={(w) => {
           setCurrentWriter(w)
+          sessionStorage.setItem(SESSION_PICKER_PASSED, '1')
           setWriter(w)
           setView({ kind: 'list' })
         }}
@@ -56,7 +67,10 @@ export default function Write() {
     <RecipientList
       writer={writer}
       onPick={(r) => setView({ kind: 'editor', recipient: r })}
-      onChangeWriter={() => setView({ kind: 'pick' })}
+      onChangeWriter={() => {
+        sessionStorage.removeItem(SESSION_PICKER_PASSED)
+        setView({ kind: 'pick' })
+      }}
     />
   )
 }
