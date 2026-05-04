@@ -62,6 +62,45 @@ export default function Photos() {
     [photos, writer?.name],
   )
 
+  // 다중 선택 삭제
+  const [selectedPhotoIds, setSelectedPhotoIds] = useState<Set<number>>(new Set())
+  const [bulkDeleting, setBulkDeleting] = useState(false)
+
+  const togglePhotoSelect = (id: number) => {
+    setSelectedPhotoIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  const handleBulkDelete = async () => {
+    const ids = Array.from(selectedPhotoIds)
+    if (ids.length === 0) return
+    if (!confirm(`사진 ${ids.length}장을 정말 삭제할까요?`)) return
+    setBulkDeleting(true)
+    const failures: number[] = []
+    await processWithConcurrency(
+      ids,
+      async (id) => {
+        try {
+          await deletePhoto(id)
+        } catch (e) {
+          console.error('Delete failed for', id, e)
+          failures.push(id)
+        }
+      },
+      4,
+    )
+    setSelectedPhotoIds(new Set())
+    setBulkDeleting(false)
+    if (failures.length > 0) {
+      alert(`${failures.length}장 삭제 실패`)
+    }
+    await reload()
+  }
+
   if (!writer) {
     return (
       <div className="min-h-full flex flex-col items-center justify-center px-6 text-center">
@@ -258,40 +297,71 @@ export default function Photos() {
           </p>
         </div>
       ) : (
-        <ul className="grid grid-cols-2 gap-4">
-          {myPhotos.map((photo) => (
-            <li key={photo.id}>
-              <PhotoCard
-                photo={photo}
-                onDelete={async () => {
-                  if (!confirm('이 사진을 정말 삭제할까요?')) return
-                  try {
-                    await deletePhoto(photo.id)
-                    await reload()
-                  } catch (e) {
-                    console.error(e)
-                    alert('삭제 실패')
-                  }
-                }}
-              />
-            </li>
-          ))}
-        </ul>
+        <>
+          {myPhotos.length > 1 && (
+            <p className="text-[11px] text-stone-400 mb-3 px-1">
+              여러 장을 한 번에 지우려면 사진을 눌러서 선택하세요.
+            </p>
+          )}
+          <ul className="grid grid-cols-2 gap-4">
+            {myPhotos.map((photo) => (
+              <li key={photo.id}>
+                <PhotoCard
+                  photo={photo}
+                  selected={selectedPhotoIds.has(photo.id)}
+                  onToggle={() => togglePhotoSelect(photo.id)}
+                />
+              </li>
+            ))}
+          </ul>
+        </>
       )}
 
       <footer className="mt-12 text-center text-xs text-stone-400">
         🌷 함께 만드는 어버이날
       </footer>
+
+      {/* 선택된 사진 삭제 바 (선택된 게 있을 때만) */}
+      {selectedPhotoIds.size > 0 && (
+        <>
+          {/* 콘텐츠가 바에 가려지지 않게 여백 */}
+          <div className="h-24" />
+          <div className="fixed bottom-0 left-0 right-0 z-50 px-5 pb-5 pt-4 bg-gradient-to-t from-white via-white/95 to-white/0">
+            <div className="max-w-2xl mx-auto flex gap-2">
+              <button
+                type="button"
+                onClick={() => setSelectedPhotoIds(new Set())}
+                disabled={bulkDeleting}
+                className="px-5 py-3 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-700 text-sm font-medium disabled:opacity-50"
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                onClick={handleBulkDelete}
+                disabled={bulkDeleting}
+                className="flex-1 bg-rose-500 hover:bg-rose-600 active:bg-rose-700 disabled:bg-stone-300 text-white font-semibold py-3 rounded-full shadow-lg shadow-rose-200/70 transition"
+              >
+                {bulkDeleting
+                  ? '삭제 중…'
+                  : `${selectedPhotoIds.size}장 삭제`}
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   )
 }
 
 function PhotoCard({
   photo,
-  onDelete,
+  selected,
+  onToggle,
 }: {
   photo: PhotoMeta
-  onDelete: () => void
+  selected: boolean
+  onToggle: () => void
 }) {
   const recipientNames = useMemo(() => {
     const ids = photoRecipientIdSet(photo)
@@ -303,7 +373,16 @@ function PhotoCard({
   }, [photo])
 
   return (
-    <div className="bg-white p-2 pb-5 shadow-md shadow-stone-300/40 relative">
+    <button
+      type="button"
+      onClick={onToggle}
+      className={[
+        'block w-full bg-white p-2 pb-5 shadow-md shadow-stone-300/40 relative text-left transition',
+        selected
+          ? 'ring-4 ring-rose-400 -translate-y-0.5 shadow-rose-200'
+          : 'hover:shadow-lg',
+      ].join(' ')}
+    >
       <div className="aspect-square bg-stone-100 rounded-sm overflow-hidden">
         <img
           src={photoImageUrl(photo.id)}
@@ -320,14 +399,16 @@ function PhotoCard({
           → {recipientNames}
         </p>
       )}
-      <button
-        type="button"
-        onClick={onDelete}
-        className="absolute top-2 right-2 w-10 h-10 rounded-full bg-white/95 hover:bg-rose-500 hover:text-white active:bg-rose-600 text-stone-600 text-base font-semibold flex items-center justify-center shadow-md border border-stone-200 transition"
-        aria-label="사진 삭제"
+      <div
+        className={[
+          'absolute top-2 right-2 w-9 h-9 rounded-full flex items-center justify-center text-base font-bold border-2 transition shadow-sm',
+          selected
+            ? 'bg-rose-500 text-white border-rose-500'
+            : 'bg-white/95 text-transparent border-stone-300',
+        ].join(' ')}
       >
-        ✕
-      </button>
-    </div>
+        ✓
+      </div>
+    </button>
   )
 }

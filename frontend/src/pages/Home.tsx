@@ -78,9 +78,6 @@ export default function Home({ recipientId }: { recipientId: string }) {
           <div className="mb-5 flex justify-center">
             <Carnation />
           </div>
-          <p className="text-xs tracking-[0.4em] text-rose-400 uppercase mb-3">
-            For. {recipient.label}
-          </p>
           <h1 className="font-display text-4xl sm:text-5xl text-stone-800 mb-4 leading-tight">
             사랑하는<br />{name}님께
           </h1>
