@@ -9,9 +9,15 @@ import {
 } from '../config/family'
 import {
   deleteLetter,
+  deletePhoto,
   getAllLetters,
+  getAllPhotos,
+  photoImageUrl,
+  photoRecipientIdSet,
   type Letter,
+  type PhotoMeta,
 } from '../lib/storage'
+import { findRecipient } from '../config/family'
 import { buildShareLink, navigate } from '../lib/router'
 
 const ADMIN_PASS = '182637'
@@ -115,13 +121,15 @@ function PasswordGate({ onSuccess }: { onSuccess: () => void }) {
 
 function AdminContent({ onLogout }: { onLogout: () => void }) {
   const [letters, setLetters] = useState<Letter[]>([])
+  const [photos, setPhotos] = useState<PhotoMeta[]>([])
   const [loading, setLoading] = useState(true)
 
   const reload = async () => {
     setLoading(true)
     try {
-      const ls = await getAllLetters()
+      const [ls, ps] = await Promise.all([getAllLetters(), getAllPhotos()])
       setLetters(ls)
+      setPhotos(ps)
     } catch (e) {
       console.error(e)
     } finally {
@@ -324,6 +332,68 @@ function AdminContent({ onLogout }: { onLogout: () => void }) {
                   </li>
                 )
               })}
+          </ul>
+        )}
+      </Section>
+
+      <Section title={`올라온 사진 (${photos.length}장)`}>
+        {photos.length === 0 ? (
+          <p className="text-sm text-stone-400 px-4 py-6 text-center bg-stone-50 rounded-2xl">
+            아직 사진이 없어요.
+          </p>
+        ) : (
+          <ul className="grid grid-cols-3 gap-3">
+            {photos.map((p) => {
+              const recipientNames = Array.from(photoRecipientIdSet(p))
+                .map((id) => findRecipient(id)?.realName)
+                .filter(Boolean)
+                .join(', ')
+              return (
+                <li
+                  key={p.id}
+                  className="bg-white rounded-xl border border-stone-200 p-2 relative"
+                >
+                  <div className="aspect-square bg-stone-100 rounded overflow-hidden mb-2">
+                    <img
+                      src={photoImageUrl(p.id)}
+                      alt={p.caption ?? ''}
+                      loading="lazy"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="text-[11px] text-stone-600 truncate">
+                    {p.uploaderName}
+                  </div>
+                  {recipientNames && (
+                    <div className="text-[10px] text-rose-500 truncate">
+                      → {recipientNames}
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (
+                        confirm(
+                          `${p.uploaderName}이 올린 사진을 정말 삭제할까요?`,
+                        )
+                      ) {
+                        try {
+                          await deletePhoto(p.id)
+                          await reload()
+                        } catch (e) {
+                          console.error(e)
+                          alert('삭제 실패')
+                        }
+                      }
+                    }}
+                    className="absolute top-3 right-3 w-6 h-6 rounded-full bg-white/90 hover:bg-rose-500 hover:text-white text-stone-500 text-[11px] flex items-center justify-center shadow border border-stone-200 transition"
+                    title="삭제"
+                  >
+                    ✕
+                  </button>
+                </li>
+              )
+            })}
           </ul>
         )}
       </Section>
