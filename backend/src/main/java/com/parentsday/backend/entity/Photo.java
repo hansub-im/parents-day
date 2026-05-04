@@ -29,14 +29,14 @@ public class Photo {
     private Long id;
 
     @Nationalized
-    @Column(name = "uploader_name", nullable = false, length = 100)
+    @Column(name = "uploader_name", nullable = false, columnDefinition = "NVARCHAR(100)")
     private String uploaderName;
 
     @Column(name = "uploader_family_id", length = 20)
     private String uploaderFamilyId;
 
     @Nationalized
-    @Column(length = 200)
+    @Column(columnDefinition = "NVARCHAR(200)")
     private String caption;
 
     /**

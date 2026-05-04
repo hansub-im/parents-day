@@ -65,6 +65,7 @@ export default function Photos() {
   // 다중 선택 삭제
   const [selectedPhotoIds, setSelectedPhotoIds] = useState<Set<number>>(new Set())
   const [bulkDeleting, setBulkDeleting] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
 
   const togglePhotoSelect = (id: number) => {
     setSelectedPhotoIds((prev) => {
@@ -75,10 +76,15 @@ export default function Photos() {
     })
   }
 
+  const requestBulkDelete = () => {
+    if (selectedPhotoIds.size === 0) return
+    setConfirmOpen(true)
+  }
+
   const handleBulkDelete = async () => {
+    setConfirmOpen(false)
     const ids = Array.from(selectedPhotoIds)
     if (ids.length === 0) return
-    if (!confirm(`사진 ${ids.length}장을 정말 삭제할까요?`)) return
     setBulkDeleting(true)
     const failures: number[] = []
     await processWithConcurrency(
@@ -326,8 +332,13 @@ export default function Photos() {
       {selectedPhotoIds.size > 0 && (
         <>
           {/* 콘텐츠가 바에 가려지지 않게 여백 */}
-          <div className="h-24" />
-          <div className="fixed bottom-0 left-0 right-0 z-50 px-5 pb-5 pt-4 bg-gradient-to-t from-white via-white/95 to-white/0">
+          <div className="h-32" />
+          <div
+            className="fixed bottom-0 left-0 right-0 z-50 px-5 pt-4 bg-gradient-to-t from-white via-white/95 to-white/0"
+            style={{
+              paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom))',
+            }}
+          >
             <div className="max-w-2xl mx-auto flex gap-2">
               <button
                 type="button"
@@ -339,7 +350,7 @@ export default function Photos() {
               </button>
               <button
                 type="button"
-                onClick={handleBulkDelete}
+                onClick={requestBulkDelete}
                 disabled={bulkDeleting}
                 className="flex-1 bg-rose-500 hover:bg-rose-600 active:bg-rose-700 disabled:bg-stone-300 text-white font-semibold py-3 rounded-full shadow-lg shadow-rose-200/70 transition"
               >
@@ -350,6 +361,36 @@ export default function Photos() {
             </div>
           </div>
         </>
+      )}
+
+      {/* 커스텀 confirm 모달 (Safari에서 window.confirm이 안 떠서 자체 구현) */}
+      {confirmOpen && (
+        <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center px-6">
+          <div className="bg-white rounded-2xl p-6 max-w-xs w-full shadow-2xl">
+            <h3 className="font-display text-xl text-stone-800 mb-2 text-center">
+              사진 삭제
+            </h3>
+            <p className="text-sm text-stone-600 text-center mb-6">
+              사진 <span className="font-semibold">{selectedPhotoIds.size}장</span>을 정말 삭제할까요?
+            </p>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setConfirmOpen(false)}
+                className="flex-1 px-4 py-3 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 font-medium"
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                onClick={handleBulkDelete}
+                className="flex-1 px-4 py-3 rounded-xl bg-rose-500 hover:bg-rose-600 active:bg-rose-700 text-white font-semibold"
+              >
+                삭제
+              </button>
+            </div>
+          </div>
+        </div>
       )}
       </div>
     </div>
