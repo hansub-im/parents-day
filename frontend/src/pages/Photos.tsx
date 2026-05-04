@@ -14,7 +14,7 @@ import {
   uploadPhoto,
   type PhotoMeta,
 } from '../lib/storage'
-import { resizeImage } from '../lib/imageResize'
+import { processWithConcurrency, resizeImage } from '../lib/imageResize'
 import { navigate } from '../lib/router'
 
 export default function Photos() {
@@ -100,26 +100,36 @@ export default function Photos() {
 
     setUploading({ done: 0, total: files.length })
     let done = 0
-    for (const file of files) {
-      try {
-        const { blob } = await resizeImage(file)
-        await uploadPhoto({
-          file: blob,
-          uploaderName: writer.name,
-          uploaderFamilyId: writer.familyId,
-          recipientIds,
-          filename: file.name,
-        })
-      } catch (err) {
-        console.error('Upload failed for', file.name, err)
-        alert(`${file.name} 업로드 실패`)
-      } finally {
-        done += 1
-        setUploading({ done, total: files.length })
-      }
-    }
+    const failures: string[] = []
+
+    await processWithConcurrency(
+      files,
+      async (file) => {
+        try {
+          const { blob } = await resizeImage(file)
+          await uploadPhoto({
+            file: blob,
+            uploaderName: writer.name,
+            uploaderFamilyId: writer.familyId,
+            recipientIds,
+            filename: file.name,
+          })
+        } catch (err) {
+          console.error('Upload failed for', file.name, err)
+          failures.push(file.name)
+        } finally {
+          done += 1
+          setUploading({ done, total: files.length })
+        }
+      },
+      3,
+    )
+
     setUploading(null)
     if (inputRef.current) inputRef.current.value = ''
+    if (failures.length > 0) {
+      alert(`업로드 실패: ${failures.join(', ')}`)
+    }
     await reload()
   }
 
