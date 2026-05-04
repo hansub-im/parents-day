@@ -72,13 +72,13 @@ jobs:
       - name: Clean remote /tmp
         run: |
           ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-            'rm -rf /tmp/dist-parents-day /tmp/app.jar && mkdir -p /tmp/dist-parents-day'
+            'rm -rf /tmp/dist-parents-day /tmp/parents-day.jar && mkdir -p /tmp/dist-parents-day'
 
       - name: Upload jar
         run: |
           scp -P ${{ secrets.SSH_PORT }} \
             "backend/${{ steps.jar.outputs.path }}" \
-            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/tmp/app.jar
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/tmp/parents-day.jar
 
       - name: Upload frontend dist
         run: |

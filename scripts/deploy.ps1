@@ -21,7 +21,7 @@ $RepoRoot     = (Resolve-Path "$PSScriptRoot\..").Path
 $FrontendDir  = Join-Path $RepoRoot 'frontend'
 $BackendDir   = Join-Path $RepoRoot 'backend'
 
-$RemoteJar     = '/tmp/app.jar'
+$RemoteJar     = '/tmp/parents-day.jar'
 $RemoteDistDir = '/tmp/dist-parents-day'
 
 function Step($msg) { Write-Host "==> $msg" -ForegroundColor Cyan }

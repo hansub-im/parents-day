@@ -91,7 +91,7 @@ sudo systemctl restart parents-day
 스크립트가 자동으로:
 1. 프론트 빌드 (`npm run build`)
 2. 백엔드 빌드 (`gradlew bootJar`)
-3. scp로 `/tmp/app.jar`, `/tmp/dist-parents-day/` 업로드
+3. scp로 `/tmp/parents-day.jar`, `/tmp/dist-parents-day/` 업로드
 4. ssh로 `sudo /usr/local/bin/redeploy-parents-day.sh` 호출
 
 ## 로그 확인
