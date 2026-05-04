@@ -69,41 +69,43 @@ function CousinPicker({
   onPick: (w: Writer) => void
 }) {
   return (
-    <div className="min-h-full flex flex-col px-5 py-8 max-w-md mx-auto">
+    <div className="min-h-full flex flex-col px-5 py-6 max-w-md mx-auto">
       <button
         type="button"
         onClick={() => navigate('/')}
-        className="self-start text-sm text-stone-400 hover:text-stone-600 mb-8"
+        className="self-start text-sm text-stone-400 hover:text-stone-600"
       >
         ← 처음으로
       </button>
 
-      <p className="text-xs tracking-[0.3em] text-rose-400 uppercase mb-3">
-        Step 1 of 2
-      </p>
-      <h2 className="font-display text-3xl text-stone-800 mb-2">
-        본인을 골라주세요
-      </h2>
-      <p className="text-sm text-stone-500 mb-8">
-        {current
-          ? `이전에 ${current.name}으로 쓰셨어요. 그대로면 다시 눌러주세요.`
-          : '어느 가족의 사촌인지 알아야 부모님 호칭을 맞춰드릴 수 있어요.'}
-      </p>
+      <div className="my-auto py-8 w-full">
+        <p className="text-xs tracking-[0.3em] text-rose-400 uppercase mb-3">
+          Step 1 of 2
+        </p>
+        <h2 className="font-display text-3xl text-stone-800 mb-2">
+          본인을 골라주세요
+        </h2>
+        <p className="text-sm text-stone-500 mb-8">
+          {current
+            ? `이전에 ${current.name}으로 쓰셨어요. 그대로면 다시 눌러주세요.`
+            : '어느 가족의 사촌인지 알아야 부모님 호칭을 맞춰드릴 수 있어요.'}
+        </p>
 
-      <div className="space-y-6">
-        {FAMILIES.map((family) => (
-          <FamilySection
-            key={family.id}
-            family={family}
-            current={current}
-            onPick={(name) => onPick({ name, familyId: family.id })}
-          />
-        ))}
+        <div className="space-y-6">
+          {FAMILIES.map((family) => (
+            <FamilySection
+              key={family.id}
+              family={family}
+              current={current}
+              onPick={(name) => onPick({ name, familyId: family.id })}
+            />
+          ))}
+        </div>
+
+        <p className="mt-10 text-xs text-stone-400 text-center">
+          잘못 골랐어도 괜찮아요. 언제든 다시 바꿀 수 있어요.
+        </p>
       </div>
-
-      <p className="mt-10 text-xs text-stone-400 text-center">
-        잘못 골랐어도 괜찮아요. 언제든 다시 바꿀 수 있어요.
-      </p>
     </div>
   )
 }
@@ -174,8 +176,8 @@ function RecipientList({
   const allDone = progress && progress.done === progress.total
 
   return (
-    <div className="min-h-full px-5 py-8 max-w-md mx-auto">
-      <div className="flex items-center justify-between mb-6">
+    <div className="min-h-full flex flex-col px-5 py-6 max-w-md mx-auto">
+      <div className="flex items-center justify-between">
         <button
           type="button"
           onClick={() => navigate('/')}
@@ -192,22 +194,23 @@ function RecipientList({
         </button>
       </div>
 
-      <p className="text-xs tracking-[0.3em] text-rose-400 uppercase mb-2">
-        Step 2 of 2
-      </p>
-      <h2 className="font-display text-3xl text-stone-800 mb-1">
-        {writer.name}님의 편지
-      </h2>
-      <p className="text-sm text-stone-500 mb-6">
-        다섯 분께 한 장씩 써주세요. 짧아도 괜찮아요.
-      </p>
+      <div className="my-auto py-8 w-full">
+        <p className="text-xs tracking-[0.3em] text-rose-400 uppercase mb-2">
+          Step 2 of 2
+        </p>
+        <h2 className="font-display text-3xl text-stone-800 mb-1">
+          {writer.name}님의 편지
+        </h2>
+        <p className="text-sm text-stone-500 mb-6">
+          다섯 분께 한 장씩 써주세요. 짧아도 괜찮아요.
+        </p>
 
-      <ProgressBar
-        done={progress?.done ?? 0}
-        total={progress?.total ?? RECIPIENTS.length}
-      />
+        <ProgressBar
+          done={progress?.done ?? 0}
+          total={progress?.total ?? RECIPIENTS.length}
+        />
 
-      <ul className="mt-8 space-y-3">
+        <ul className="mt-8 space-y-3">
         {RECIPIENTS.map((r) => {
           const done = progress?.doneIds.has(r.id) ?? false
           const label = recipientLabelFor(r.id, writer.familyId)
@@ -260,21 +263,22 @@ function RecipientList({
         </div>
       )}
 
-      <button
-        type="button"
-        onClick={() => navigate('/photos')}
-        className="mt-8 w-full bg-white border border-rose-200 hover:bg-rose-50 text-rose-700 font-semibold py-3 rounded-2xl transition flex items-center justify-center gap-2"
-      >
-        📸 추억 사진 올리기
-      </button>
+        <button
+          type="button"
+          onClick={() => navigate('/photos')}
+          className="mt-8 w-full bg-white border border-rose-200 hover:bg-rose-50 text-rose-700 font-semibold py-3 rounded-2xl transition flex items-center justify-center gap-2"
+        >
+          📸 추억 사진 올리기
+        </button>
 
-      <button
-        type="button"
-        onClick={() => navigate('/replies')}
-        className="mt-3 w-full text-sm text-stone-500 hover:text-rose-600 underline underline-offset-2"
-      >
-        답장함 열기
-      </button>
+        <button
+          type="button"
+          onClick={() => navigate('/replies')}
+          className="mt-3 w-full text-sm text-stone-500 hover:text-rose-600 underline underline-offset-2"
+        >
+          답장함 열기
+        </button>
+      </div>
     </div>
   )
 }

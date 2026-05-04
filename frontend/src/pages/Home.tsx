@@ -62,16 +62,18 @@ export default function Home({ recipientId }: { recipientId: string }) {
     <div className="min-h-full relative overflow-hidden">
       <Decoration />
 
-      <div className="relative z-10 max-w-md mx-auto px-5 py-10">
+      <div className="relative z-10 max-w-md mx-auto px-5 py-6 min-h-full flex flex-col">
         {letterCount > 0 && (
           <button
             type="button"
             onClick={() => navigate(`/read/${recipient.id}`)}
-            className="mb-6 inline-flex items-center gap-1.5 text-xs text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 px-3 py-1.5 rounded-full transition"
+            className="self-start inline-flex items-center gap-1.5 text-xs text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 px-3 py-1.5 rounded-full transition"
           >
             ✉ 받은 편지 {letterCount}통 →
           </button>
         )}
+
+        <div className="my-auto py-8 w-full">
 
         {/* Hero */}
         <header className="text-center mb-10">
@@ -117,6 +119,8 @@ export default function Home({ recipientId }: { recipientId: string }) {
             💌 편지 받으러 가기
           </button>
         </section>
+
+        </div>
 
         <footer className="text-center text-xs text-stone-400 mt-10">
           🌷 어버이날, 늘 감사합니다

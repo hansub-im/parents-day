@@ -42,15 +42,16 @@ export default function Read({ recipientId }: { recipientId: string }) {
   const lettersList = letters ?? []
 
   return (
-    <div className="min-h-full px-5 py-10 max-w-md mx-auto">
+    <div className="min-h-full flex flex-col px-5 py-6 max-w-md mx-auto">
       <button
         type="button"
         onClick={() => navigate(`/home/${recipient.id}`)}
-        className="mb-6 text-sm text-stone-400 hover:text-stone-600"
+        className="self-start text-sm text-stone-400 hover:text-stone-600"
       >
         ← 추억의 홈으로
       </button>
 
+      <div className="my-auto py-8 w-full">
       <header className="text-center mb-10">
         <p className="text-xs tracking-[0.4em] text-rose-400 uppercase mb-3">
           어버이날 편지
@@ -102,6 +103,8 @@ export default function Read({ recipientId }: { recipientId: string }) {
           </ul>
         </>
       ) : null}
+
+      </div>
 
       <footer className="mt-12 text-center text-xs text-stone-400">
         🌷 어버이날, 늘 감사합니다

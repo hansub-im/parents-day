@@ -179,8 +179,8 @@ export default function Photos() {
   }
 
   return (
-    <div className="min-h-full px-5 py-8 max-w-2xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
+    <div className="min-h-full flex flex-col px-5 py-6 max-w-2xl mx-auto">
+      <div className="flex items-center justify-between">
         <button
           type="button"
           onClick={() => navigate('/write')}
@@ -197,6 +197,7 @@ export default function Photos() {
         </button>
       </div>
 
+      <div className="my-auto py-8 w-full">
       <header className="mb-6">
         <p className="text-xs tracking-[0.4em] text-rose-400 uppercase mb-2">
           For 추억의 홈
@@ -350,6 +351,7 @@ export default function Photos() {
           </div>
         </>
       )}
+      </div>
     </div>
   )
 }

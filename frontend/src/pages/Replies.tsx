@@ -40,8 +40,8 @@ export default function Replies() {
   }
 
   return (
-    <div className="min-h-full px-5 py-10 max-w-md mx-auto">
-      <div className="flex items-center justify-between mb-6">
+    <div className="min-h-full flex flex-col px-5 py-6 max-w-md mx-auto">
+      <div className="flex items-center justify-between">
         <button
           type="button"
           onClick={() => navigate('/write')}
@@ -58,30 +58,32 @@ export default function Replies() {
         </button>
       </div>
 
-      <header className="text-center mb-10">
-        <p className="text-xs tracking-[0.4em] text-rose-400 uppercase mb-3">
-          For. {writer.name}
-        </p>
-        <h1 className="font-display text-4xl text-stone-800 mb-3">
-          가족이 보낸 답장
-        </h1>
-        <p className="text-sm text-stone-500 leading-relaxed">
-          어버이날에 부모님들께서<br />
-          전해주신 답장이에요
-        </p>
-      </header>
+      <div className="my-auto py-8 w-full">
+        <header className="text-center mb-10">
+          <p className="text-xs tracking-[0.4em] text-rose-400 uppercase mb-3">
+            For. {writer.name}
+          </p>
+          <h1 className="font-display text-4xl text-stone-800 mb-3">
+            가족이 보낸 답장
+          </h1>
+          <p className="text-sm text-stone-500 leading-relaxed">
+            어버이날에 부모님들께서<br />
+            전해주신 답장이에요
+          </p>
+        </header>
 
-      <ul className="space-y-4">
-        {RECIPIENTS.map((r) => (
-          <li key={r.id}>
-            <ReplyCard
-              recipient={r}
-              cousinName={writer.name}
-              writerFamilyId={writer.familyId}
-            />
-          </li>
-        ))}
-      </ul>
+        <ul className="space-y-4">
+          {RECIPIENTS.map((r) => (
+            <li key={r.id}>
+              <ReplyCard
+                recipient={r}
+                cousinName={writer.name}
+                writerFamilyId={writer.familyId}
+              />
+            </li>
+          ))}
+        </ul>
+      </div>
 
       <footer className="mt-12 text-center text-xs text-stone-400">
         🌷 가족, 늘 감사합니다
