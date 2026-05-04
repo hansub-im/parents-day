@@ -12,8 +12,10 @@ import {
   deletePhoto,
   getAllLetters,
   getAllPhotos,
+  listPinsSet,
   photoImageUrl,
   photoRecipientIdSet,
+  resetPin,
   type Letter,
   type PhotoMeta,
 } from '../lib/storage'
@@ -122,14 +124,20 @@ function PasswordGate({ onSuccess }: { onSuccess: () => void }) {
 function AdminContent({ onLogout }: { onLogout: () => void }) {
   const [letters, setLetters] = useState<Letter[]>([])
   const [photos, setPhotos] = useState<PhotoMeta[]>([])
+  const [pinsSet, setPinsSet] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
 
   const reload = async () => {
     setLoading(true)
     try {
-      const [ls, ps] = await Promise.all([getAllLetters(), getAllPhotos()])
+      const [ls, ps, pins] = await Promise.all([
+        getAllLetters(),
+        getAllPhotos(),
+        listPinsSet().catch(() => []),
+      ])
       setLetters(ls)
       setPhotos(ps)
+      setPinsSet(pins)
     } catch (e) {
       console.error(e)
     } finally {
@@ -262,6 +270,57 @@ function AdminContent({ onLogout }: { onLogout: () => void }) {
           ))}
         </div>
         <UnknownWriters letters={letters} matrix={matrix} />
+      </Section>
+
+      <Section title="사촌 PIN 관리">
+        <p className="text-xs text-stone-400 mb-3">
+          PIN을 잊은 사촌이 있으면 리셋해주세요. 리셋되면 그 사촌은 다음 입장 때 PIN을 새로 만들 수 있어요.
+        </p>
+        <ul className="bg-white rounded-2xl border border-stone-200 divide-y divide-stone-100">
+          {FAMILIES.flatMap((f) => f.cousins).map((name) => {
+            const isSet = pinsSet.includes(name)
+            return (
+              <li
+                key={name}
+                className="px-4 py-3 flex items-center justify-between gap-3"
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="font-semibold text-stone-800 truncate">
+                    {name}
+                  </span>
+                  <span
+                    className={[
+                      'text-[10px] tracking-wider uppercase px-1.5 py-0.5 rounded',
+                      isSet
+                        ? 'bg-emerald-100 text-emerald-700'
+                        : 'bg-stone-100 text-stone-500',
+                    ].join(' ')}
+                  >
+                    {isSet ? 'PIN 설정됨' : '미설정'}
+                  </span>
+                </div>
+                {isSet && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (!confirm(`${name}의 PIN을 리셋할까요?`)) return
+                      try {
+                        await resetPin(name)
+                        await reload()
+                      } catch (e) {
+                        console.error(e)
+                        alert('리셋 실패')
+                      }
+                    }}
+                    className="text-xs text-rose-500 hover:text-rose-700 px-3 py-1.5 rounded-lg hover:bg-rose-50 shrink-0"
+                  >
+                    리셋
+                  </button>
+                )}
+              </li>
+            )
+          })}
+        </ul>
       </Section>
 
       <Section title="모든 편지">

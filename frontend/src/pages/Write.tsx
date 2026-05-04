@@ -12,8 +12,11 @@ import {
   getCurrentWriter,
   getLetter,
   getWriterProgress,
+  pinExists,
   saveLetter,
   setCurrentWriter,
+  setPin,
+  verifyPin,
   type Writer,
 } from '../lib/storage'
 import { navigate } from '../lib/router'
@@ -82,6 +85,8 @@ function CousinPicker({
   current: Writer | null
   onPick: (w: Writer) => void
 }) {
+  const [pending, setPending] = useState<{ name: string; familyId: Family['id'] } | null>(null)
+
   return (
     <div className="min-h-dvh flex flex-col px-5 py-6 max-w-md mx-auto">
       <button
@@ -111,7 +116,7 @@ function CousinPicker({
               key={family.id}
               family={family}
               current={current}
-              onPick={(name) => onPick({ name, familyId: family.id })}
+              onPick={(name) => setPending({ name, familyId: family.id })}
             />
           ))}
         </div>
@@ -119,6 +124,153 @@ function CousinPicker({
         <p className="mt-10 text-xs text-stone-400 text-center">
           잘못 골랐어도 괜찮아요. 언제든 다시 바꿀 수 있어요.
         </p>
+      </div>
+
+      {pending && (
+        <PinModal
+          cousinName={pending.name}
+          onSuccess={() => {
+            const picked = pending
+            setPending(null)
+            onPick({ name: picked.name, familyId: picked.familyId })
+          }}
+          onCancel={() => setPending(null)}
+        />
+      )}
+    </div>
+  )
+}
+
+function PinModal({
+  cousinName,
+  onSuccess,
+  onCancel,
+}: {
+  cousinName: string
+  onSuccess: () => void
+  onCancel: () => void
+}) {
+  const [mode, setMode] = useState<'checking' | 'set' | 'verify'>('checking')
+  const [pin1, setPin1] = useState('')
+  const [pin2, setPin2] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    pinExists(cousinName)
+      .then((exists) => {
+        if (!cancelled) setMode(exists ? 'verify' : 'set')
+      })
+      .catch(() => {
+        if (!cancelled) setMode('set')
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [cousinName])
+
+  const handleSubmit = async () => {
+    setError(null)
+    if (mode === 'set') {
+      if (!/^\d{4}$/.test(pin1)) {
+        setError('숫자 4자리로 만들어주세요')
+        return
+      }
+      if (pin1 !== pin2) {
+        setError('두 번 입력이 달라요')
+        return
+      }
+      setSubmitting(true)
+      const ok = await setPin(cousinName, pin1)
+      setSubmitting(false)
+      if (ok) onSuccess()
+      else setError('이미 설정된 PIN이 있어요. 입력 모드로 다시 시도해주세요.')
+    } else if (mode === 'verify') {
+      if (!/^\d{4}$/.test(pin1)) {
+        setError('숫자 4자리로 입력해주세요')
+        return
+      }
+      setSubmitting(true)
+      const ok = await verifyPin(cousinName, pin1)
+      setSubmitting(false)
+      if (ok) onSuccess()
+      else {
+        setError('PIN이 틀려요')
+        setPin1('')
+      }
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center px-6">
+      <div className="bg-white rounded-2xl p-6 max-w-xs w-full shadow-2xl">
+        <h3 className="font-display text-xl text-stone-800 mb-1 text-center">
+          {cousinName}
+        </h3>
+        <p className="text-sm text-stone-500 text-center mb-5">
+          {mode === 'checking' && '확인 중…'}
+          {mode === 'set' && '처음이라 PIN을 만들어주세요 (4자리)'}
+          {mode === 'verify' && '본인 확인 PIN 4자리'}
+        </p>
+
+        {mode !== 'checking' && (
+          <>
+            <input
+              type="password"
+              inputMode="numeric"
+              maxLength={4}
+              autoFocus
+              value={pin1}
+              onChange={(e) => {
+                setPin1(e.target.value.replace(/\D/g, '').slice(0, 4))
+                setError(null)
+              }}
+              placeholder="••••"
+              className="w-full bg-white border border-stone-200 rounded-xl px-4 py-3 text-lg text-center tracking-[0.5em] outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-100 mb-3"
+            />
+            {mode === 'set' && (
+              <input
+                type="password"
+                inputMode="numeric"
+                maxLength={4}
+                value={pin2}
+                onChange={(e) => {
+                  setPin2(e.target.value.replace(/\D/g, '').slice(0, 4))
+                  setError(null)
+                }}
+                placeholder="다시 한 번"
+                className="w-full bg-white border border-stone-200 rounded-xl px-4 py-3 text-lg text-center tracking-[0.5em] outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-100 mb-3"
+              />
+            )}
+            {error && (
+              <p className="text-xs text-rose-500 text-center mb-3">{error}</p>
+            )}
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={onCancel}
+                disabled={submitting}
+                className="flex-1 px-4 py-3 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 font-medium disabled:opacity-50"
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                onClick={handleSubmit}
+                disabled={submitting}
+                className="flex-1 px-4 py-3 rounded-xl bg-rose-500 hover:bg-rose-600 disabled:bg-stone-300 text-white font-semibold"
+              >
+                {submitting ? '잠시…' : mode === 'set' ? '만들기' : '확인'}
+              </button>
+            </div>
+            {mode === 'verify' && (
+              <p className="text-[11px] text-stone-400 text-center mt-3">
+                PIN 잊었으면 가족 단톡방에 알려주세요. 관리자가 리셋해줄게요.
+              </p>
+            )}
+          </>
+        )}
       </div>
     </div>
   )

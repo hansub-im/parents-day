@@ -296,3 +296,51 @@ export async function deletePhoto(id: number): Promise<void> {
   const res = await fetch(`${API_BASE}/photos/${id}`, { method: 'DELETE' })
   if (!res.ok) throw new Error(`DELETE /api/photos ${res.status}`)
 }
+
+// === Cousin PIN ===
+
+export async function pinExists(cousinName: string): Promise<boolean> {
+  const res = await fetch(
+    `${API_BASE}/pins/${encodeURIComponent(cousinName)}/exists`,
+  )
+  if (!res.ok) throw new Error(`pinExists ${res.status}`)
+  const data = await res.json()
+  return !!data.exists
+}
+
+export async function setPin(cousinName: string, pin: string): Promise<boolean> {
+  const res = await fetch(`${API_BASE}/pins/set`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ cousinName, pin }),
+  })
+  if (!res.ok) return false
+  const data = await res.json()
+  return !!data.ok
+}
+
+export async function verifyPin(
+  cousinName: string,
+  pin: string,
+): Promise<boolean> {
+  const res = await fetch(`${API_BASE}/pins/verify`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ cousinName, pin }),
+  })
+  if (!res.ok) return false
+  const data = await res.json()
+  return !!data.ok
+}
+
+export async function resetPin(cousinName: string): Promise<void> {
+  await fetch(`${API_BASE}/pins/${encodeURIComponent(cousinName)}`, {
+    method: 'DELETE',
+  })
+}
+
+export async function listPinsSet(): Promise<string[]> {
+  const res = await fetch(`${API_BASE}/pins`)
+  if (!res.ok) return []
+  return res.json()
+}
