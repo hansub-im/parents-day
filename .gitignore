@@ -1,0 +1,31 @@
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.iml
+
+# 로그 / 임시 파일
+*.log
+.backend.log
+.frontend.log
+.npm-install.log
+
+# 클로드 세션 (있을 경우)
+.claude/
+
+# 비밀 (Spring local profile에 비번 들어있음)
+**/application-local.yml
+**/application-local.properties
+**/application-secrets.yml
+
+# 빌드 산출물
+backend/build/
+backend/.gradle/
+backend/bin/
+frontend/dist/
+frontend/node_modules/
+
+# OS-specific
+.env
+.env.local

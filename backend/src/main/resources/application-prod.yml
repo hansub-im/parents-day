@@ -1,0 +1,20 @@
+spring:
+  datasource:
+    url: ${DB_URL}                     # 환경변수 필수 (기본값 없음)
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: validate               # 운영은 자동 스키마 변경 절대 금지
+
+app:
+  cors:
+    origins: ${APP_CORS_ORIGINS}       # 환경변수 필수 — 콤마 구분 다중 가능
+
+logging:
+  file:
+    name: /var/log/parents-day/app.log
+  level:
+    root: INFO
+    com.parentsday.backend: DEBUG

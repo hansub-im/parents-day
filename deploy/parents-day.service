@@ -1,0 +1,17 @@
+[Unit]
+Description=Parents Day Spring Boot
+After=network.target
+
+[Service]
+Type=simple
+User=parents-day
+Group=parents-day
+WorkingDirectory=/opt/parents-day
+EnvironmentFile=/etc/parents-day/env
+ExecStart=/usr/bin/java -jar /opt/parents-day/app.jar
+SuccessExitStatus=143
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
