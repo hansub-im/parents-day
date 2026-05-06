@@ -266,7 +266,9 @@ function PinModal({
             </div>
             {mode === 'verify' && (
               <p className="text-[11px] text-stone-400 text-center mt-3">
-                PIN 잊었으면 가족 단톡방에 알려주세요. 관리자가 리셋해줄게요.
+                PIN 잊었으면 가족 단톡방에 알려주세요.
+                <br />
+                관리자가 리셋해줄게요.
               </p>
             )}
           </>
@@ -437,12 +439,46 @@ function RecipientList({
           📸 추억 사진 올리기
         </button>
 
+        <section className="mt-8">
+          <div className="flex items-center gap-3 mb-3 px-1">
+            <span className="h-px flex-1 bg-rose-200" />
+            <span className="text-xs tracking-[0.3em] text-rose-400 uppercase">
+              부모님 홈 미리보기
+            </span>
+            <span className="h-px flex-1 bg-rose-200" />
+          </div>
+          <p className="text-xs text-stone-500 mb-3 px-1">
+            부모님께 보일 화면을 미리 볼 수 있어요. 편지는 부모님만 열어 보실 수 있어요.
+          </p>
+          <ul className="grid grid-cols-2 gap-2">
+            {RECIPIENTS.map((r) => {
+              const label = recipientLabelFor(r.id, writer.familyId)
+              return (
+                <li key={r.id}>
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/preview/${r.id}`)}
+                    className="w-full bg-white border border-stone-200 hover:border-rose-300 hover:bg-rose-50/40 px-3 py-3 rounded-xl text-left transition"
+                  >
+                    <div className="text-sm font-semibold text-stone-700 truncate">
+                      {recipientPrimary(r)}
+                    </div>
+                    <div className="text-[11px] text-stone-400 truncate">
+                      {label} · 미리보기 →
+                    </div>
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
+        </section>
+
         <button
           type="button"
           onClick={() => navigate('/replies')}
-          className="mt-3 w-full text-sm text-stone-500 hover:text-rose-600 underline underline-offset-2"
+          className="mt-8 w-full bg-white border border-rose-200 hover:bg-rose-50 text-rose-700 font-semibold py-3 rounded-2xl transition flex items-center justify-center gap-2"
         >
-          답장함 열기
+          💌 답장함 열기
         </button>
       </div>
     </div>

@@ -80,6 +80,16 @@ sudo systemctl restart parents-day
 
 또는 [SQL 스크립트](#)로 수동 생성. 어느 쪽이든 한 번만 하면 됨.
 
+## PIN 컬럼 마이그레이션
+
+PIN은 해시로 저장하므로 기존 DB가 `NVARCHAR(10)`이면 배포 전에 한 번 실행:
+
+```sql
+ALTER TABLE cousin_pins ALTER COLUMN pin NVARCHAR(128) NOT NULL;
+```
+
+같은 내용이 `deploy/hash-pin-column.sql`에 있음.
+
 ## 매번 배포
 
 로컬 PowerShell에서:

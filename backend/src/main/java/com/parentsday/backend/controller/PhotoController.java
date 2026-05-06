@@ -1,5 +1,6 @@
 package com.parentsday.backend.controller;
 
+import com.parentsday.backend.config.AdminAuth;
 import com.parentsday.backend.entity.Photo;
 import com.parentsday.backend.repository.PhotoRepository;
 import java.io.IOException;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class PhotoController {
 
     private final PhotoRepository repo;
+    private final AdminAuth adminAuth;
 
     public record PhotoMeta(
         Long id,
@@ -91,10 +94,19 @@ public class PhotoController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        if (repo.existsById(id)) {
-            repo.deleteById(id);
+    public ResponseEntity<Void> delete(
+        @RequestHeader(value = AdminAuth.HEADER_NAME, required = false) String adminPassword,
+        @PathVariable Long id,
+        @RequestParam(value = "uploader", required = false) String uploader
+    ) {
+        Photo photo = repo.findById(id).orElse(null);
+        if (photo == null) {
+            return ResponseEntity.noContent().build();
         }
+        if (!adminAuth.isValid(adminPassword) && !photo.getUploaderName().equals(uploader)) {
+            adminAuth.require(adminPassword);
+        }
+        repo.delete(photo);
         return ResponseEntity.noContent().build();
     }
 }

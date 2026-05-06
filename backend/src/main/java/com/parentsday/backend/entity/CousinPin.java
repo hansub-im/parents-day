@@ -26,7 +26,7 @@ public class CousinPin {
     @Column(name = "cousin_name", columnDefinition = "NVARCHAR(100)")
     private String cousinName;
 
-    @Column(name = "pin", nullable = false, length = 10)
+    @Column(name = "pin", nullable = false, length = 128)
     private String pin;
 
     @Column(name = "updated_at", nullable = false)

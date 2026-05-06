@@ -19,8 +19,11 @@ export default function App() {
   else if (path === '/admin') page = <Admin />
   else {
     const homeMatch = path.match(/^\/home\/([^/]+)\/?$/)
+    const previewMatch = path.match(/^\/preview\/([^/]+)\/?$/)
     if (homeMatch) {
       page = <Home recipientId={decodeURIComponent(homeMatch[1])} />
+    } else if (previewMatch) {
+      page = <Home recipientId={decodeURIComponent(previewMatch[1])} preview />
     } else {
       const readMatch = path.match(/^\/read\/([^/]+)\/?$/)
       if (readMatch) page = <Read recipientId={decodeURIComponent(readMatch[1])} />

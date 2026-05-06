@@ -61,6 +61,15 @@ body {
   animation: fade-up 0.4s ease-out both;
 }
 
+@keyframes carnation-sway {
+  0%, 100% { transform: rotate(-2deg); }
+  50%      { transform: rotate(2deg); }
+}
+.animate-carnation-sway {
+  animation: carnation-sway 5s ease-in-out infinite;
+  transform-origin: 50% 90%;
+}
+
 button {
   -webkit-tap-highlight-color: transparent;
 }

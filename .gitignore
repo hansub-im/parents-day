@@ -18,11 +18,13 @@ Thumbs.db
 **/application-local.yml
 **/application-local.properties
 **/application-secrets.yml
+!backend/src/main/resources/application-local.yml
 
 # 빌드 산출물
 backend/build/
 backend/.gradle/
 backend/bin/
+backend/data/
 frontend/dist/
 frontend/node_modules/
 

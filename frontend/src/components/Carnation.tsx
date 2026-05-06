@@ -1,0 +1,133 @@
+import { useId } from 'react'
+
+type Props = {
+  className?: string
+  /** Show only the flower head (no stem/leaves) — for small inline icons. */
+  headOnly?: boolean
+}
+
+export function Carnation({ className, headOnly = false }: Props) {
+  const uid = useId()
+  const petalId = `c-petal-${uid}`
+  const leafId = `c-leaf-${uid}`
+
+  return (
+    <svg
+      viewBox={headOnly ? '30 10 200 200' : '0 0 260 340'}
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      className={className}
+    >
+      <defs>
+        <linearGradient id={petalId} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#ff8fa3" />
+          <stop offset="55%" stopColor="#f04463" />
+          <stop offset="100%" stopColor="#b91c3a" />
+        </linearGradient>
+        <linearGradient id={leafId} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#63c96b" />
+          <stop offset="100%" stopColor="#1f7a3f" />
+        </linearGradient>
+      </defs>
+
+      {!headOnly && (
+        <>
+          <path
+            d="M132 156 C125 205 130 255 113 318"
+            fill="none"
+            stroke="#257a3d"
+            strokeWidth="8"
+            strokeLinecap="round"
+          />
+          <path
+            d="M121 230 C76 198 44 220 30 257 C72 266 105 255 121 230Z"
+            fill={`url(#${leafId})`}
+          />
+          <path
+            d="M128 255 C172 222 209 239 225 276 C181 287 145 278 128 255Z"
+            fill={`url(#${leafId})`}
+          />
+          <path
+            d="M44 254 C78 247 101 237 121 230"
+            stroke="#1d6b37"
+            strokeWidth="2"
+            fill="none"
+          />
+          <path
+            d="M213 274 C178 266 149 261 128 255"
+            stroke="#1d6b37"
+            strokeWidth="2"
+            fill="none"
+          />
+        </>
+      )}
+
+      <path
+        d="M91 144 C108 129 151 129 168 144 C153 153 145 166 133 183 C123 166 109 153 91 144Z"
+        fill="#247c3f"
+      />
+
+      <g transform="translate(130 110)">
+        <path
+          d="M0 -82 C-22 -102 -48 -83 -39 -55 C-74 -70 -98 -36 -70 -10 C-106 2 -94 46 -55 42 C-71 78 -28 101 -5 67 C18 105 64 82 52 43 C91 53 112 12 78 -9 C106 -39 74 -77 42 -56 C48 -91 21 -106 0 -82Z"
+          fill={`url(#${petalId})`}
+        />
+        <path
+          d="M-6 -88 L5 -75 L18 -93 L23 -70 L45 -84 L42 -60 L68 -65 L55 -43 L83 -35 L60 -22 L87 -3 L58 3 L77 28 L48 22 L55 55 L28 39 L13 74 L0 42 L-21 73 L-25 39 L-58 54 L-43 25 L-78 25 L-54 4 L-87 -10 L-55 -23 L-76 -50 L-44 -43 L-48 -76 L-24 -58Z"
+          fill="#ff6b82"
+          opacity="0.55"
+        />
+        <path
+          d="M-36 -42 C-20 -25 -19 -7 -33 12"
+          stroke="#9f1239"
+          strokeWidth="4"
+          fill="none"
+          strokeLinecap="round"
+          opacity="0.35"
+        />
+        <path
+          d="M26 -51 C11 -30 13 -10 33 7"
+          stroke="#9f1239"
+          strokeWidth="4"
+          fill="none"
+          strokeLinecap="round"
+          opacity="0.35"
+        />
+        <path
+          d="M-6 -61 C8 -34 5 -6 -6 24"
+          stroke="#9f1239"
+          strokeWidth="4"
+          fill="none"
+          strokeLinecap="round"
+          opacity="0.28"
+        />
+        <path
+          d="M-47 22 C-23 18 -8 27 -2 52"
+          stroke="#9f1239"
+          strokeWidth="4"
+          fill="none"
+          strokeLinecap="round"
+          opacity="0.25"
+        />
+        <path
+          d="M43 26 C20 20 9 30 2 55"
+          stroke="#9f1239"
+          strokeWidth="4"
+          fill="none"
+          strokeLinecap="round"
+          opacity="0.25"
+        />
+
+        <path
+          d="M0 -38 C-18 -42 -34 -24 -24 -7 C-42 0 -34 24 -13 18 C-7 39 21 34 20 12 C41 8 37 -20 16 -19 C16 -35 8 -40 0 -38Z"
+          fill="#c9184a"
+        />
+        <path
+          d="M-3 -25 C-14 -18 -15 -4 -6 4 C-17 11 -10 24 4 18 C12 27 25 14 17 3 C28 -4 18 -18 6 -14 C7 -24 2 -27 -3 -25Z"
+          fill="#ff9aae"
+        />
+      </g>
+    </svg>
+  )
+}

@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import { Carnation } from '../components/Carnation'
+import { Lightbox } from '../components/Lightbox'
 import { findRecipient, recipientPrimary } from '../config/family'
 import {
   getAllPhotos,
@@ -21,17 +23,26 @@ const PLACEHOLDERS = [
 
 const ROTATIONS = [-2, 1.5, -1, 2, -1.5, 1, -2.2, 1.8, -0.8, 2.4]
 
-export default function Home({ recipientId }: { recipientId: string }) {
+export default function Home({
+  recipientId,
+  preview = false,
+}: {
+  recipientId: string
+  preview?: boolean
+}) {
   const recipient = findRecipient(recipientId)
   const [letterCount, setLetterCount] = useState<number>(0)
   const [photos, setPhotos] = useState<PhotoMeta[] | null>(null)
+  const [lightboxIdx, setLightboxIdx] = useState<number | null>(null)
 
   useEffect(() => {
     if (!recipient) return
     let cancelled = false
 
     Promise.all([
-      getLettersByRecipient(recipient.id).catch(() => []),
+      preview
+        ? Promise.resolve([])
+        : getLettersByRecipient(recipient.id).catch(() => []),
       getAllPhotos().catch(() => []),
     ]).then(([ls, ps]) => {
       if (cancelled) return
@@ -42,7 +53,8 @@ export default function Home({ recipientId }: { recipientId: string }) {
     return () => {
       cancelled = true
     }
-  }, [recipient?.id])
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- recipient는 id로부터 매 렌더 파생. id로 충분
+  }, [recipient?.id, preview])
 
   if (!recipient) {
     return (
@@ -63,14 +75,29 @@ export default function Home({ recipientId }: { recipientId: string }) {
       <Decoration />
 
       <div className="relative z-10 max-w-md mx-auto px-5 py-6 min-h-dvh flex flex-col">
-        {letterCount > 0 && (
-          <button
-            type="button"
-            onClick={() => navigate(`/read/${recipient.id}`)}
-            className="self-start inline-flex items-center gap-1.5 text-xs text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 px-3 py-1.5 rounded-full transition"
-          >
-            ✉ 받은 편지 {letterCount}통 →
-          </button>
+        {preview ? (
+          <div className="mb-2 flex items-center justify-between gap-2 rounded-full bg-stone-100 border border-stone-200 px-3 py-1.5">
+            <span className="text-[11px] text-stone-600">
+              👀 미리보기 — 부모님께 보일 화면이에요
+            </span>
+            <button
+              type="button"
+              onClick={() => navigate('/photos')}
+              className="text-[11px] text-stone-500 hover:text-stone-800 underline underline-offset-2 shrink-0"
+            >
+              ← 사진으로
+            </button>
+          </div>
+        ) : (
+          letterCount > 0 && (
+            <button
+              type="button"
+              onClick={() => navigate(`/read/${recipient.id}`)}
+              className="self-start inline-flex items-center gap-1.5 text-xs text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 px-3 py-1.5 rounded-full transition"
+            >
+              ✉ 받은 편지 {letterCount}통 →
+            </button>
+          )
         )}
 
         <div className="my-auto py-8 w-full">
@@ -78,7 +105,9 @@ export default function Home({ recipientId }: { recipientId: string }) {
         {/* Hero */}
         <header className="text-center mb-10">
           <div className="mb-5 flex justify-center">
-            <Carnation />
+            <div className="animate-bloom">
+              <Carnation className="h-24 animate-carnation-sway" />
+            </div>
           </div>
           <h1 className="font-display text-4xl sm:text-5xl text-stone-800 mb-4 leading-tight">
             사랑하는<br />{name}님께
@@ -92,13 +121,18 @@ export default function Home({ recipientId }: { recipientId: string }) {
         {/* Polaroid gallery */}
         <section className="mb-12">
           <SectionLabel>우리의 추억</SectionLabel>
-          <PolaroidGrid photos={photos} />
+          {photos && photos.length > 0 && (
+            <p className="text-center text-sm text-stone-500 mb-5">
+              👆 사진을 누르면 크게 보여요
+            </p>
+          )}
+          <PolaroidGrid photos={photos} onOpen={(i) => setLightboxIdx(i)} />
         </section>
 
         {/* Quote */}
         <section className="mb-12 px-2">
           <div className="rounded-3xl bg-white/70 backdrop-blur-sm border border-rose-100 p-7 text-center shadow-sm shadow-rose-100/30">
-            <div className="text-2xl mb-3">🌷</div>
+            <Carnation headOnly className="h-10 mx-auto mb-3" />
             <p className="font-letter text-lg text-stone-700 leading-loose">
               늘 우리 곁에 계셔주셔서<br />
               감사하고, 또 감사해요.
@@ -107,30 +141,64 @@ export default function Home({ recipientId }: { recipientId: string }) {
         </section>
 
         {/* CTA */}
-        <section className="mb-10 text-center">
-          <p className="text-sm text-stone-500 mb-4">
-            가족이 한 마음으로 모은 편지가 도착했어요
-          </p>
-          <button
-            type="button"
-            onClick={() => navigate(`/read/${recipient.id}`)}
-            className="w-full bg-rose-500 hover:bg-rose-600 active:bg-rose-700 text-white text-base font-semibold py-4 rounded-2xl shadow-lg shadow-rose-200/70 transition-all hover:-translate-y-0.5"
-          >
-            💌 편지 받으러 가기
-          </button>
-        </section>
+        {preview ? (
+          <section className="mb-10 text-center">
+            <div className="rounded-2xl border border-dashed border-stone-300 bg-white/50 px-5 py-6 text-center">
+              <p className="text-sm text-stone-600 mb-1">💌 편지 받으러 가기</p>
+              <p className="text-[11px] text-stone-400 leading-relaxed">
+                편지는 부모님만 열어 보실 수 있어요
+              </p>
+            </div>
+          </section>
+        ) : (
+          <section className="mb-10 text-center">
+            <p className="text-sm text-stone-500 mb-4">
+              가족이 한 마음으로 모은 편지가 도착했어요
+            </p>
+            <button
+              type="button"
+              onClick={() => navigate(`/read/${recipient.id}`)}
+              className="w-full bg-rose-500 hover:bg-rose-600 active:bg-rose-700 text-white text-base font-semibold py-4 rounded-2xl shadow-lg shadow-rose-200/70 transition-all hover:-translate-y-0.5"
+            >
+              💌 편지 받으러 가기
+            </button>
+          </section>
+        )}
 
         </div>
 
-        <footer className="text-center text-xs text-stone-400 mt-10">
-          🌷 어버이날, 늘 감사합니다
+        <footer className="text-center text-xs text-stone-400 mt-10 flex items-center justify-center gap-1.5">
+          <Carnation headOnly className="h-4" />
+          <span>어버이날, 늘 감사합니다</span>
         </footer>
       </div>
+
+      {photos && photos.length > 0 && lightboxIdx !== null && (
+        <Lightbox
+          photos={photos}
+          index={lightboxIdx}
+          onClose={() => setLightboxIdx(null)}
+          onPrev={() =>
+            setLightboxIdx((i) => (i === null ? null : Math.max(0, i - 1)))
+          }
+          onNext={() =>
+            setLightboxIdx((i) =>
+              i === null ? null : Math.min(photos.length - 1, i + 1),
+            )
+          }
+        />
+      )}
     </div>
   )
 }
 
-function PolaroidGrid({ photos }: { photos: PhotoMeta[] | null }) {
+function PolaroidGrid({
+  photos,
+  onOpen,
+}: {
+  photos: PhotoMeta[] | null
+  onOpen: (index: number) => void
+}) {
   if (photos === null) {
     // initial loading — show muted skeleton placeholders
     return (
@@ -160,6 +228,7 @@ function PolaroidGrid({ photos }: { photos: PhotoMeta[] | null }) {
           photo={photo}
           rotate={ROTATIONS[i % ROTATIONS.length]}
           delay={i * 80}
+          onOpen={() => onOpen(i)}
         />
       ))}
     </div>
@@ -195,7 +264,7 @@ function PlaceholderPolaroid({
         <div
           className={`aspect-square rounded-sm flex items-center justify-center bg-gradient-to-br ${gradient}`}
         >
-          <div className="text-3xl opacity-40">🌷</div>
+          <Carnation headOnly className="h-12 opacity-40" />
         </div>
         <p className="mt-3 text-center font-letter text-sm text-stone-400">
           사진을 기다리는 중…
@@ -209,15 +278,19 @@ function RealPolaroid({
   photo,
   rotate,
   delay,
+  onOpen,
 }: {
   photo: PhotoMeta
   rotate: number
   delay: number
+  onOpen: () => void
 }) {
   return (
     <div className="animate-fade-up" style={{ animationDelay: `${delay}ms` }}>
-      <div
-        className="bg-white p-2.5 pb-7 shadow-lg shadow-stone-300/40 relative"
+      <button
+        type="button"
+        onClick={onOpen}
+        className="block w-full bg-white p-2.5 pb-7 shadow-lg shadow-stone-300/40 relative text-left transition-transform hover:-translate-y-0.5 hover:scale-[1.02] active:scale-[0.98]"
         style={{ transform: `rotate(${rotate}deg)` }}
       >
         <Tape />
@@ -229,10 +302,18 @@ function RealPolaroid({
             className="w-full h-full object-cover"
           />
         </div>
-        <p className="mt-3 text-center font-letter text-base text-stone-700 px-1 truncate">
+        <p
+          className="mt-3 text-center font-letter text-base text-stone-700 px-1"
+          style={{
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+          }}
+        >
           {photo.caption?.trim() || `— ${photo.uploaderName}`}
         </p>
-      </div>
+      </button>
     </div>
   )
 }
@@ -256,53 +337,3 @@ function Decoration() {
   )
 }
 
-function Carnation() {
-  return (
-    <svg
-      width="80"
-      height="80"
-      viewBox="0 0 100 100"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden
-      className="animate-bloom"
-    >
-      {/* 줄기 */}
-      <path
-        d="M50 58 Q 48 75 52 95"
-        stroke="#15803d"
-        strokeWidth="3.5"
-        strokeLinecap="round"
-        fill="none"
-      />
-      {/* 잎 */}
-      <path
-        d="M50 80 Q 32 76 24 88 Q 38 85 50 82 Z"
-        fill="#16a34a"
-      />
-      <path
-        d="M50 70 Q 67 66 74 76 Q 62 73 50 72 Z"
-        fill="#16a34a"
-      />
-
-      {/* 카네이션 머리 — 풍성한 분홍 펑펑한 모양 */}
-      <g transform="translate(50, 36)">
-        <circle cx="-18" cy="-8"  r="11" fill="#fda4af" />
-        <circle cx="18"  cy="-8"  r="11" fill="#fda4af" />
-        <circle cx="-15" cy="11"  r="11" fill="#fda4af" />
-        <circle cx="15"  cy="11"  r="11" fill="#fda4af" />
-        <circle cx="0"   cy="-19" r="11" fill="#fda4af" />
-        <circle cx="0"   cy="16"  r="10" fill="#fda4af" />
-
-        <circle cx="-9"  cy="-4"  r="11" fill="#fb7185" />
-        <circle cx="9"   cy="-4"  r="11" fill="#fb7185" />
-        <circle cx="0"   cy="-11" r="10" fill="#fb7185" />
-        <circle cx="-7"  cy="8"   r="10" fill="#fb7185" />
-        <circle cx="7"   cy="8"   r="10" fill="#fb7185" />
-
-        <circle cx="0" cy="0" r="9" fill="#e11d48" />
-        <circle cx="-2" cy="-3" r="3" fill="#fda4af" opacity="0.7" />
-      </g>
-    </svg>
-  )
-}

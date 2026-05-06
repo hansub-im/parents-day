@@ -1,6 +1,7 @@
 import { findFamilyByCousin, RECIPIENTS, type FamilyId } from '../config/family'
 
 const API_BASE = '/api'
+const ADMIN_AUTH_KEY = 'parents-day:admin-pass:v1'
 
 export type Letter = {
   id?: number
@@ -51,6 +52,28 @@ export function getCurrentWriter(): Writer | null {
 export function setCurrentWriter(writer: Writer | null) {
   if (writer) localStorage.setItem(WRITER_KEY, JSON.stringify(writer))
   else localStorage.removeItem(WRITER_KEY)
+}
+
+export function getAdminPassword(): string | null {
+  return localStorage.getItem(ADMIN_AUTH_KEY)
+}
+
+export function setAdminPassword(password: string | null) {
+  if (password) localStorage.setItem(ADMIN_AUTH_KEY, password)
+  else localStorage.removeItem(ADMIN_AUTH_KEY)
+}
+
+function adminHeaders(password: string): HeadersInit {
+  return { 'X-Admin-Pass': password }
+}
+
+export async function verifyAdminPassword(password: string): Promise<boolean> {
+  const res = await fetch(`${API_BASE}/admin/verify`, {
+    headers: adminHeaders(password),
+  })
+  if (!res.ok) return false
+  const data = await res.json()
+  return !!data.ok
 }
 
 // === Letters ===
@@ -110,12 +133,16 @@ export async function saveLetter(input: {
 export async function deleteLetter(
   writerName: string,
   recipientId: string,
+  adminPassword: string,
 ): Promise<void> {
   const params = new URLSearchParams({
     writer: writerName,
     recipient: recipientId,
   })
-  const res = await fetch(`${API_BASE}/letters?${params}`, { method: 'DELETE' })
+  const res = await fetch(`${API_BASE}/letters?${params}`, {
+    method: 'DELETE',
+    headers: adminHeaders(adminPassword),
+  })
   if (!res.ok) throw new Error(`DELETE /api/letters ${res.status}`)
 }
 
@@ -198,11 +225,15 @@ export async function saveReply(input: {
 
 export async function deleteReply(
   recipientId: string,
+  adminPassword: string,
   toCousinName?: string,
 ): Promise<void> {
   const params = new URLSearchParams({ recipient: recipientId })
   if (toCousinName) params.append('cousin', toCousinName)
-  const res = await fetch(`${API_BASE}/replies?${params}`, { method: 'DELETE' })
+  const res = await fetch(`${API_BASE}/replies?${params}`, {
+    method: 'DELETE',
+    headers: adminHeaders(adminPassword),
+  })
   if (!res.ok) throw new Error(`DELETE /api/replies ${res.status}`)
 }
 
@@ -292,8 +323,19 @@ export async function uploadPhoto(input: {
   return res.json()
 }
 
-export async function deletePhoto(id: number): Promise<void> {
-  const res = await fetch(`${API_BASE}/photos/${id}`, { method: 'DELETE' })
+export async function deletePhoto(
+  id: number,
+  options?: { uploaderName?: string; adminPassword?: string },
+): Promise<void> {
+  const params = new URLSearchParams()
+  if (options?.uploaderName) params.set('uploader', options.uploaderName)
+  const query = params.size > 0 ? `?${params}` : ''
+  const res = await fetch(`${API_BASE}/photos/${id}${query}`, {
+    method: 'DELETE',
+    headers: options?.adminPassword
+      ? adminHeaders(options.adminPassword)
+      : undefined,
+  })
   if (!res.ok) throw new Error(`DELETE /api/photos ${res.status}`)
 }
 
@@ -333,20 +375,31 @@ export async function verifyPin(
   return !!data.ok
 }
 
-export async function resetPin(cousinName: string): Promise<void> {
-  await fetch(`${API_BASE}/pins/${encodeURIComponent(cousinName)}`, {
+export async function resetPin(
+  cousinName: string,
+  adminPassword: string,
+): Promise<void> {
+  const res = await fetch(`${API_BASE}/pins/${encodeURIComponent(cousinName)}`, {
     method: 'DELETE',
+    headers: adminHeaders(adminPassword),
   })
+  if (!res.ok) throw new Error(`DELETE /api/pins/:name ${res.status}`)
 }
 
-export async function resetAllPins(): Promise<void> {
-  await fetch(`${API_BASE}/pins`, { method: 'DELETE' })
+export async function resetAllPins(adminPassword: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/pins`, {
+    method: 'DELETE',
+    headers: adminHeaders(adminPassword),
+  })
+  if (!res.ok) throw new Error(`DELETE /api/pins ${res.status}`)
 }
 
-export type PinSummary = { cousinName: string; pin: string }
+export type PinSummary = { cousinName: string; set: boolean }
 
-export async function listPins(): Promise<PinSummary[]> {
-  const res = await fetch(`${API_BASE}/pins`)
+export async function listPins(adminPassword: string): Promise<PinSummary[]> {
+  const res = await fetch(`${API_BASE}/pins`, {
+    headers: adminHeaders(adminPassword),
+  })
   if (!res.ok) return []
   return res.json()
 }

@@ -9,6 +9,8 @@ spring:
       ddl-auto: validate               # 운영은 자동 스키마 변경 절대 금지
 
 app:
+  admin:
+    password: ${ADMIN_PASSWORD}
   cors:
     origins: ${APP_CORS_ORIGINS}       # 환경변수 필수 — 콤마 구분 다중 가능
 

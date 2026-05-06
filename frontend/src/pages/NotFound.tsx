@@ -1,10 +1,11 @@
+import { Carnation } from '../components/Carnation'
 import { navigate } from '../lib/router'
 
 export default function NotFound() {
   return (
     <div className="min-h-dvh flex items-center justify-center px-6 text-center">
       <div>
-        <p className="text-6xl mb-5">🌷</p>
+        <Carnation className="h-24 mx-auto mb-5" />
         <h2 className="font-display text-2xl text-stone-800 mb-2">
           페이지를 찾을 수 없어요
         </h2>

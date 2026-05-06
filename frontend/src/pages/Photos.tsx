@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react'
+import { Carnation } from '../components/Carnation'
 import {
   findFamily,
   findRecipient,
@@ -32,14 +33,17 @@ export default function Photos() {
     const ids: string[] = [f.fatherId]
     if (f.motherId) ids.push(f.motherId)
     return new Set(ids)
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- writer는 매 렌더 새로 읽힘. familyId만 있으면 충분
   }, [writer?.familyId])
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(defaultIds)
-
-  // sync default when writer changes
-  useEffect(() => {
+  // writer가 바뀌면 (이름 바꾸기) 기본 선택을 다시 그 가족 부모로 맞춤.
+  // useEffect 대신 render-phase 비교 — React 19 권장 패턴.
+  const [prevDefaultIds, setPrevDefaultIds] = useState(defaultIds)
+  if (defaultIds !== prevDefaultIds) {
+    setPrevDefaultIds(defaultIds)
     setSelectedIds(new Set(defaultIds))
-  }, [defaultIds])
+  }
 
   const reload = async () => {
     setLoading(true)
@@ -53,12 +57,14 @@ export default function Photos() {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- mount-time fetch
     reload()
   }, [])
 
   // 본인이 올린 사진만 보여줌. 다른 사촌이 올린 사진은 부모님 홈에서만 보임.
   const myPhotos = useMemo(
     () => (writer ? photos.filter((p) => p.uploaderName === writer.name) : []),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- writer는 매 렌더 새로 읽힘. name만 있으면 충분
     [photos, writer?.name],
   )
 
@@ -83,6 +89,7 @@ export default function Photos() {
 
   const handleBulkDelete = async () => {
     setConfirmOpen(false)
+    if (!writer) return
     const ids = Array.from(selectedPhotoIds)
     if (ids.length === 0) return
     setBulkDeleting(true)
@@ -91,7 +98,7 @@ export default function Photos() {
       ids,
       async (id) => {
         try {
-          await deletePhoto(id)
+          await deletePhoto(id, { uploaderName: writer.name })
         } catch (e) {
           console.error('Delete failed for', id, e)
           failures.push(id)
@@ -268,12 +275,22 @@ export default function Photos() {
             ? `업로드 중… ${uploading.done} / ${uploading.total}`
             : '📸 사진 추가하기'}
         </button>
-        {selectedIds.size === 0 && (
+        {uploading && (
+          <div className="h-1.5 bg-rose-100 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-rose-500 transition-[width] duration-300"
+              style={{
+                width: `${Math.round((uploading.done / Math.max(uploading.total, 1)) * 100)}%`,
+              }}
+            />
+          </div>
+        )}
+        {!uploading && selectedIds.size === 0 && (
           <p className="text-[11px] text-rose-500 text-center">
             ⚠ 받는 분을 한 명 이상 선택해주세요
           </p>
         )}
-        {selectedIds.size > 0 && (
+        {!uploading && selectedIds.size > 0 && (
           <p className="text-[11px] text-stone-400 text-center">
             여러 장을 한 번에 선택할 수 있어요. 자동으로 크기 조정해서 올라가요.
           </p>
@@ -296,7 +313,7 @@ export default function Photos() {
 
       {myPhotos.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-stone-300 p-10 text-center">
-          <div className="text-3xl mb-3">🌷</div>
+          <Carnation headOnly className="h-12 mx-auto mb-3" />
           <p className="text-sm text-stone-500">
             첫 사진을 올려보세요!
             <br />
@@ -324,8 +341,43 @@ export default function Photos() {
         </>
       )}
 
-      <footer className="mt-12 text-center text-xs text-stone-400">
-        🌷 함께 만드는 어버이날
+      <section className="mt-10">
+        <div className="flex items-center gap-3 mb-3 px-1">
+          <span className="h-px flex-1 bg-rose-200" />
+          <span className="text-xs tracking-[0.3em] text-rose-400 uppercase">
+            부모님 홈 미리보기
+          </span>
+          <span className="h-px flex-1 bg-rose-200" />
+        </div>
+        <p className="text-xs text-stone-500 mb-3 px-1">
+          올린 사진이 각 분 홈 화면에 어떻게 보이는지 확인해보세요. 편지는 부모님만 열어 보실 수 있어요.
+        </p>
+        <ul className="grid grid-cols-2 gap-2">
+          {RECIPIENTS.map((r) => {
+            const label = recipientLabelFor(r.id, writer.familyId)
+            return (
+              <li key={r.id}>
+                <button
+                  type="button"
+                  onClick={() => navigate(`/preview/${r.id}`)}
+                  className="w-full bg-white border border-stone-200 hover:border-rose-300 hover:bg-rose-50/40 px-3 py-3 rounded-xl text-left transition"
+                >
+                  <div className="text-sm font-semibold text-stone-700 truncate">
+                    {r.realName}
+                  </div>
+                  <div className="text-[11px] text-stone-400 truncate">
+                    {label} · 미리보기 →
+                  </div>
+                </button>
+              </li>
+            )
+          })}
+        </ul>
+      </section>
+
+      <footer className="mt-12 text-center text-xs text-stone-400 flex items-center justify-center gap-1.5">
+        <Carnation headOnly className="h-4" />
+        <span>함께 만드는 어버이날</span>
       </footer>
 
       {/* 선택된 사진 삭제 바 (선택된 게 있을 때만) */}

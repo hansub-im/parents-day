@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   FAMILIES,
   familyDisplayName,
@@ -10,6 +10,7 @@ import {
 import {
   deleteLetter,
   deletePhoto,
+  getAdminPassword,
   getAllLetters,
   getAllPhotos,
   listPins,
@@ -18,28 +19,25 @@ import {
   photoImageUrl,
   photoRecipientIdSet,
   resetPin,
+  setAdminPassword,
   type Letter,
   type PhotoMeta,
+  verifyAdminPassword,
 } from '../lib/storage'
 import { findRecipient } from '../config/family'
 import { buildShareLink, navigate } from '../lib/router'
 
-const ADMIN_PASS = '182637'
-const ADMIN_AUTH_KEY = 'parents-day:admin-auth:v1'
-
-function isAdminAuthed(): boolean {
-  return localStorage.getItem(ADMIN_AUTH_KEY) === ADMIN_PASS
-}
-
 export default function Admin() {
-  const [authed, setAuthed] = useState<boolean>(() => isAdminAuthed())
+  const [adminPassword, setAdminPasswordState] = useState<string | null>(() =>
+    getAdminPassword(),
+  )
 
-  if (!authed) {
+  if (!adminPassword) {
     return (
       <PasswordGate
-        onSuccess={() => {
-          localStorage.setItem(ADMIN_AUTH_KEY, ADMIN_PASS)
-          setAuthed(true)
+        onSuccess={(password) => {
+          setAdminPassword(password)
+          setAdminPasswordState(password)
         }}
       />
     )
@@ -47,17 +45,20 @@ export default function Admin() {
 
   return (
     <AdminContent
+      adminPassword={adminPassword}
       onLogout={() => {
-        localStorage.removeItem(ADMIN_AUTH_KEY)
-        setAuthed(false)
+        setAdminPassword(null)
+        setAdminPasswordState(null)
+        navigate('/')
       }}
     />
   )
 }
 
-function PasswordGate({ onSuccess }: { onSuccess: () => void }) {
+function PasswordGate({ onSuccess }: { onSuccess: (password: string) => void }) {
   const [input, setInput] = useState('')
   const [error, setError] = useState(false)
+  const [checking, setChecking] = useState(false)
 
   return (
     <div className="min-h-dvh flex flex-col items-center justify-center px-6 py-10">
@@ -80,12 +81,23 @@ function PasswordGate({ onSuccess }: { onSuccess: () => void }) {
       <form
         onSubmit={(e) => {
           e.preventDefault()
-          if (input === ADMIN_PASS) {
-            onSuccess()
-          } else {
-            setError(true)
-            setInput('')
-          }
+          const password = input.trim()
+          if (!password) return
+          setChecking(true)
+          verifyAdminPassword(password)
+            .then((ok) => {
+              if (ok) {
+                onSuccess(password)
+              } else {
+                setError(true)
+                setInput('')
+              }
+            })
+            .catch(() => {
+              setError(true)
+              setInput('')
+            })
+            .finally(() => setChecking(false))
         }}
         className="w-full max-w-xs space-y-3"
       >
@@ -113,29 +125,35 @@ function PasswordGate({ onSuccess }: { onSuccess: () => void }) {
         )}
         <button
           type="submit"
-          disabled={!input}
+          disabled={!input || checking}
           className="w-full bg-rose-500 hover:bg-rose-600 disabled:bg-stone-200 disabled:text-stone-400 text-white font-semibold py-4 rounded-2xl shadow-lg shadow-rose-200/70 transition"
         >
-          확인
+          {checking ? '확인 중…' : '확인'}
         </button>
       </form>
     </div>
   )
 }
 
-function AdminContent({ onLogout }: { onLogout: () => void }) {
+function AdminContent({
+  adminPassword,
+  onLogout,
+}: {
+  adminPassword: string
+  onLogout: () => void
+}) {
   const [letters, setLetters] = useState<Letter[]>([])
   const [photos, setPhotos] = useState<PhotoMeta[]>([])
   const [pins, setPins] = useState<PinSummary[]>([])
   const [loading, setLoading] = useState(true)
 
-  const reload = async () => {
+  const reload = useCallback(async () => {
     setLoading(true)
     try {
       const [ls, ps, ps2] = await Promise.all([
         getAllLetters(),
         getAllPhotos(),
-        listPins().catch(() => [] as PinSummary[]),
+        listPins(adminPassword).catch(() => [] as PinSummary[]),
       ])
       setLetters(ls)
       setPhotos(ps)
@@ -145,11 +163,12 @@ function AdminContent({ onLogout }: { onLogout: () => void }) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [adminPassword])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- mount-time fetch
     reload()
-  }, [])
+  }, [reload])
 
   const allCousins = useMemo(() => {
     return FAMILIES.flatMap((f) =>
@@ -290,7 +309,7 @@ function AdminContent({ onLogout }: { onLogout: () => void }) {
                 return
               }
               try {
-                await resetAllPins()
+                await resetAllPins(adminPassword)
                 await reload()
               } catch (e) {
                 console.error(e)
@@ -316,9 +335,9 @@ function AdminContent({ onLogout }: { onLogout: () => void }) {
                     {name}
                   </span>
                   {isSet ? (
-                    <code className="text-sm font-mono tabular-nums tracking-[0.3em] text-stone-700 bg-stone-100 px-2 py-1 rounded">
-                      {entry.pin}
-                    </code>
+                    <span className="text-[10px] tracking-wider uppercase text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">
+                      설정됨
+                    </span>
                   ) : (
                     <span className="text-[10px] tracking-wider uppercase text-stone-400 bg-stone-100 px-1.5 py-0.5 rounded">
                       미설정
@@ -331,7 +350,7 @@ function AdminContent({ onLogout }: { onLogout: () => void }) {
                     onClick={async () => {
                       if (!confirm(`${name}의 PIN을 리셋할까요?`)) return
                       try {
-                        await resetPin(name)
+                        await resetPin(name, adminPassword)
                         await reload()
                       } catch (e) {
                         console.error(e)
@@ -398,7 +417,11 @@ function AdminContent({ onLogout }: { onLogout: () => void }) {
                             )
                           ) {
                             try {
-                              await deleteLetter(l.writerName, l.recipientId)
+                              await deleteLetter(
+                                l.writerName,
+                                l.recipientId,
+                                adminPassword,
+                              )
                               await reload()
                             } catch (e) {
                               console.error(e)
@@ -463,7 +486,7 @@ function AdminContent({ onLogout }: { onLogout: () => void }) {
                         )
                       ) {
                         try {
-                          await deletePhoto(p.id)
+                          await deletePhoto(p.id, { adminPassword })
                           await reload()
                         } catch (e) {
                           console.error(e)
@@ -609,14 +632,16 @@ function UnknownWriters({
 function BulkLinks() {
   const text = useMemo(() => {
     const lines = [
-      '🌷 어버이날 편지가 도착했어요',
-      '본인 성함이 적힌 줄을 눌러주세요',
+      '🌹 어버이날, 가족 편지가 도착했어요',
+      '본인 성함을 찾아 아래 링크를 눌러주세요 💌',
       '',
-      ...RECIPIENTS.map(
-        (r) => `${r.realName} 어른: ${buildShareLink(`/home/${r.id}`)}`,
-      ),
+      ...RECIPIENTS.flatMap((r) => [
+        `🌷 ${r.realName} ${r.label}`,
+        buildShareLink(`/home/${r.id}`),
+        '',
+      ]),
     ]
-    return lines.join('\n')
+    return lines.join('\n').trimEnd()
   }, [])
 
   return (

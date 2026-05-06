@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Carnation } from '../components/Carnation'
 import {
   RECIPIENTS,
   recipientLabelFor,
@@ -21,7 +22,7 @@ export default function Replies() {
   if (!writer) {
     return (
       <div className="min-h-dvh flex flex-col items-center justify-center px-6 text-center">
-        <p className="text-5xl mb-5">🌷</p>
+        <Carnation className="h-20 mb-5" />
         <h2 className="font-display text-2xl text-stone-800 mb-2">
           먼저 본인 이름을 골라주세요
         </h2>
@@ -85,8 +86,9 @@ export default function Replies() {
         </ul>
       </div>
 
-      <footer className="mt-12 text-center text-xs text-stone-400">
-        🌷 가족, 늘 감사합니다
+      <footer className="mt-12 text-center text-xs text-stone-400 flex items-center justify-center gap-1.5">
+        <Carnation headOnly className="h-4" />
+        <span>가족, 늘 감사합니다</span>
       </footer>
     </div>
   )

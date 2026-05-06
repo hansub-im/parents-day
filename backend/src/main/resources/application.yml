@@ -16,18 +16,10 @@ spring:
     name: backend
   profiles:
     active: local                       # 기본값. 운영 배포 시 SPRING_PROFILES_ACTIVE=prod
-  datasource:
-    url: ${DB_URL:jdbc:sqlserver://localhost:1433;databaseName=newproject;encrypt=true;trustServerCertificate=true;sendStringParametersAsUnicode=true}
-    username: ${DB_USERNAME:sa}
-    password: ${DB_PASSWORD:}
-    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
   jpa:
-    hibernate:
-      ddl-auto: update
     show-sql: false
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.SQLServerDialect
         format_sql: true
         physical_naming_strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
         # ↑ 컬럼명 snake_case 변환 끄고 자바 필드명 그대로 매핑 (단, @Column(name=...) 명시는 그대로 우선)
@@ -39,5 +31,7 @@ spring:
       file-size-threshold: 1MB
 
 app:
+  admin:
+    password: ${ADMIN_PASSWORD:182637}
   cors:
     origins: ${APP_CORS_ORIGINS:http://localhost:5173}

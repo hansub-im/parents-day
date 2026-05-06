@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Carnation } from '../components/Carnation'
 import { findRecipient, recipientPrimary } from '../config/family'
 import {
   getCommonReply,
@@ -25,6 +26,7 @@ export default function Read({ recipientId }: { recipientId: string }) {
     return () => {
       cancelled = true
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- recipient는 id로부터 매 렌더 파생. id로 충분
   }, [recipient?.id])
 
   if (!recipient) {
@@ -106,8 +108,9 @@ export default function Read({ recipientId }: { recipientId: string }) {
 
       </div>
 
-      <footer className="mt-12 text-center text-xs text-stone-400">
-        🌷 어버이날, 늘 감사합니다
+      <footer className="mt-12 text-center text-xs text-stone-400 flex items-center justify-center gap-1.5">
+        <Carnation headOnly className="h-4" />
+        <span>어버이날, 늘 감사합니다</span>
       </footer>
     </div>
   )
@@ -118,6 +121,7 @@ function CommonReplyBox({ recipientId }: { recipientId: string }) {
   const [savedContent, setSavedContent] = useState<string>('')
   const [open, setOpen] = useState<boolean>(false)
   const [saving, setSaving] = useState(false)
+  const [savedFlash, setSavedFlash] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -141,7 +145,11 @@ function CommonReplyBox({ recipientId }: { recipientId: string }) {
       setSaving(true)
       await saveReply({ fromRecipientId: recipientId, content })
       setSavedContent(content)
-      setOpen(false)
+      setSavedFlash(true)
+      setTimeout(() => {
+        setSavedFlash(false)
+        setOpen(false)
+      }, 1200)
     } catch (e) {
       console.error(e)
       alert('저장 실패. 잠시 후 다시 시도해주세요.')
@@ -184,17 +192,22 @@ function CommonReplyBox({ recipientId }: { recipientId: string }) {
       </button>
 
       {open && (
-        <div className="px-4 pb-4">
+        <div className="px-4 pb-4 animate-fade-up">
+          {savedFlash && (
+            <div className="mb-3 rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-3 text-emerald-700 text-sm text-center font-semibold">
+              ✓ 답장을 보냈어요
+            </div>
+          )}
           <ReplyEditor
             value={content}
             onChange={setContent}
             onSave={handleSave}
             hasSavedReply={hasSavedReply}
             saving={saving}
-            placeholder="자식들에게 한 마디 적어주세요…"
+            placeholder="아이들에게 한 마디 적어주세요…"
           />
           <p className="mt-3 text-[11px] text-stone-400 text-center">
-            개별 답장이 있는 사촌은 그쪽이 우선 보여요.
+            이 답장은 개별 답장을 따로 적지 않은 아이들에게 보여요.
           </p>
         </div>
       )}
@@ -251,14 +264,14 @@ function LetterCard({
       </button>
 
       {open && (
-        <div className="border-t border-stone-100">
+        <div className="border-t border-stone-100 animate-fade-up">
           <div
-            className="font-letter px-6 py-6 text-stone-800 text-base leading-8 bg-[#fffaf0]"
+            className="font-display px-6 py-6 text-stone-800 text-xl leading-10 bg-[#fffaf0]"
             style={{
               whiteSpace: 'pre-wrap',
               wordBreak: 'break-word',
               backgroundImage:
-                'repeating-linear-gradient(to bottom, transparent 0, transparent 31px, rgba(180, 83, 9, 0.08) 32px)',
+                'repeating-linear-gradient(to bottom, transparent 0, transparent 39px, rgba(180, 83, 9, 0.08) 40px)',
             }}
           >
             {letter.content}
@@ -288,6 +301,7 @@ function IndividualReplySection({
   const [savedContent, setSavedContent] = useState<string>('')
   const [open, setOpen] = useState<boolean>(false)
   const [saving, setSaving] = useState(false)
+  const [savedFlash, setSavedFlash] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -315,7 +329,11 @@ function IndividualReplySection({
         content,
       })
       setSavedContent(content)
-      setOpen(false)
+      setSavedFlash(true)
+      setTimeout(() => {
+        setSavedFlash(false)
+        setOpen(false)
+      }, 1200)
     } catch (e) {
       console.error(e)
       alert('저장 실패. 잠시 후 다시 시도해주세요.')
@@ -353,7 +371,7 @@ function IndividualReplySection({
   }
 
   return (
-    <div className="border-t border-stone-100 bg-rose-50/60 p-4">
+    <div className="border-t border-stone-100 bg-rose-50/60 p-4 animate-fade-up">
       <div className="flex items-center justify-between mb-3">
         <div className="text-xs text-stone-500">
           <span className="font-semibold text-rose-600">{cousinName}</span>
@@ -367,6 +385,11 @@ function IndividualReplySection({
           닫기
         </button>
       </div>
+      {savedFlash && (
+        <div className="mb-3 rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-3 text-emerald-700 text-sm text-center font-semibold">
+          ✓ {cousinName}에게 답장을 보냈어요
+        </div>
+      )}
       <ReplyEditor
         value={content}
         onChange={setContent}
@@ -397,19 +420,19 @@ function ReplyEditor({
   const trimmed = value.trim()
   return (
     <div>
-      <div className="relative min-h-[180px]">
+      <div className="relative min-h-[240px]">
         <div
           className="absolute inset-0 rounded-xl bg-[#fffaf0] border border-stone-200/80"
           style={{
             backgroundImage:
-              'repeating-linear-gradient(to bottom, transparent 0, transparent 27px, rgba(180, 83, 9, 0.08) 28px)',
+              'repeating-linear-gradient(to bottom, transparent 0, transparent 39px, rgba(180, 83, 9, 0.08) 40px)',
           }}
         />
         <textarea
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className="font-letter relative w-full min-h-[180px] bg-transparent rounded-xl px-4 py-3 text-base leading-7 text-stone-800 outline-none resize-none"
+          className="font-display relative w-full min-h-[240px] bg-transparent rounded-xl px-4 py-3 text-xl leading-10 text-stone-800 outline-none resize-none"
         />
       </div>
       <div className="mt-3 flex items-center justify-between gap-3">

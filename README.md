@@ -24,7 +24,7 @@ parents-day/
 ## 로컬 개발
 
 ```powershell
-# 백엔드 (DB 카페24 MSSQL 사용)
+# 백엔드 (로컬은 H2 파일 DB 자동 사용)
 cd backend
 .\gradlew.bat bootRun
 
